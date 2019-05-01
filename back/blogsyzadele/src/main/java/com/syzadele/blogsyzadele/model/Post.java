@@ -1,5 +1,5 @@
 package com.syzadele.blogsyzadele.model;
-import java.sql.Date;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -20,6 +20,13 @@ public class Post {
 	@Lob
 	private String content;
 	private int readTimes;
+	
+	public Post(String title, Date posteDate, String auther) {
+		super();
+		this.title = title;
+		this.posteDate = posteDate;
+		this.auther = auther;
+	}
 
 	public Post(int id, String topic, String title, Date posteDate, String auther, String content, int readTimes) {
 		super();
