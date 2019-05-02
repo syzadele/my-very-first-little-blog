@@ -16,6 +16,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<dir>${project.build.directory}</dir>
 	</properties>
 
 	<dependencies>
@@ -63,6 +64,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<outputDirectory>${dir}</outputDirectory>
+				</configuration>
 			</plugin>
 		</plugins>
 		<!-- profile对资源的操作 -->
