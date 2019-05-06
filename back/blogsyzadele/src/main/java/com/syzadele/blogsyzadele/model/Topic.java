@@ -1,15 +1,19 @@
 package com.syzadele.blogsyzadele.model;
 import java.util.ArrayList;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 
 @Entity
 public class Topic {
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@Column(unique=true)
 	private String name;
 	@Lob
 	private String presentation;
@@ -17,6 +21,9 @@ public class Topic {
 	private ArrayList<String> coverPhotos;
 	private ArrayList<Post> posts;
 	
+	public Topic() {
+		
+	}
 	public Topic(int id, String name, String presentation, ArrayList<String> coverPhotos) {
 		this.id = id;
 		this.name = name;
@@ -24,6 +31,14 @@ public class Topic {
 		this.coverPhotos = coverPhotos;
 	}
 	
+	public Topic(String name, String presentation, ArrayList<String> coverPhotos) {
+		super();
+		this.name = name;
+		this.presentation = presentation;
+		this.coverPhotos = coverPhotos;
+		this.posts = posts;
+	}
+
 	public void addCoverPhoto(String photo) {
 		this.coverPhotos.add(photo);
 	}
