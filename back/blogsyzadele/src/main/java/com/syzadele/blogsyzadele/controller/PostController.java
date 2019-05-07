@@ -1,5 +1,4 @@
 package com.syzadele.blogsyzadele.controller;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +43,9 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
 	public void updateOne(Post p) {
-		postRepository.save(p);
+		if (postRepository.existsById(p.getId())) {
+			postRepository.save(p);
+		}
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne")
@@ -55,6 +56,16 @@ public class PostController {
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAll")
 	public List<Post> getAll() {
 		return postRepository.findAll();
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddReadTimes")
+	public void addReadTimes(@RequestParam(value = "id") int id) {
+		if (postRepository.existsById(id)) {
+			Optional<Post> op = postRepository.findById(id);
+			Post p = op.get();
+			p.setReadTimes(p.getReadTimes() + 1);
+			postRepository.save(p);
+		}
 	}
 
 }

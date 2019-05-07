@@ -1,5 +1,6 @@
 package com.syzadele.blogsyzadele.model;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -7,8 +8,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="TOPIC")
 public class Topic {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,9 +21,10 @@ public class Topic {
 	private String name;
 	@Lob
 	private String presentation;
-
+	
 	private ArrayList<String> coverPhotos;
-	private ArrayList<Post> posts;
+	@OneToMany(mappedBy="topic")
+	private List<Post> posts;
 	
 	public Topic() {
 		
@@ -31,7 +36,7 @@ public class Topic {
 		this.coverPhotos = coverPhotos;
 	}
 	
-	public Topic(String name, String presentation, ArrayList<String> coverPhotos) {
+	public Topic(String name, String presentation, ArrayList<String> coverPhotos, ArrayList<Post> posts) {
 		super();
 		this.name = name;
 		this.presentation = presentation;
@@ -45,14 +50,6 @@ public class Topic {
 	
 	public void deletePhoto(String photo) {
 		this.coverPhotos.remove(this.coverPhotos.indexOf(photo));
-	}
-	
-	public void addPost(Post post) {
-		this.posts.add(post);
-	}
-	
-	public void deletePost(int id) {
-		this.posts.remove(this.posts.indexOf(this.getPost(id)));
 	}
 	
 	public int getId() {
@@ -82,7 +79,12 @@ public class Topic {
 		this.coverPhotos = coverPhotos;
 	}
 	public ArrayList<Post> getPosts() {
-		return posts;
+		if (this.posts != null) {
+			return (ArrayList<Post>) posts;
+		}
+		else {
+			return new ArrayList<>();
+		}
 	}
 	public Post getPost(int id) {
 		for (Post p : this.posts) {
@@ -94,4 +96,12 @@ public class Topic {
 		this.posts = posts;
 	}
 		
+	public void addPost(Post post) {
+		if(this.posts == null) this.posts = new ArrayList<>();
+		this.posts.add(post);
+	}
+	
+	public void deletePost(int id) {
+		this.posts.remove(this.posts.indexOf(this.getPost(id)));
+	}
 }
