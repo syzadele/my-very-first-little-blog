@@ -61,7 +61,7 @@ public class TopicController {
 			Optional<Topic> ot = topicRepository.findById(topicID);
 			Topic t = ot.get();
 			t.addPost(p);
-			p.setTopic(t.getName());
+			p.setTopic(t);
 			postRepository.save(p);
 			topicRepository.save(t);
 		}
