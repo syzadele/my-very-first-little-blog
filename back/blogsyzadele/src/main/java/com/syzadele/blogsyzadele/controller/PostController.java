@@ -21,7 +21,7 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Post create(@RequestParam(value = "title", defaultValue = "1") String title,
-			@RequestParam(value = "posteDate") @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
+			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
 			@RequestParam(value = "auther") String auther,
 			@RequestParam(value = "content") String content,
 			@RequestParam(value = "readTimes", defaultValue = "0") int readTimes) {

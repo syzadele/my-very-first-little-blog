@@ -27,8 +27,8 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos") ArrayList<String> coverPhotos,
-			@RequestParam(value="posts") ArrayList<Post> posts){
+			@RequestParam(value="coverPhotos", required=false) ArrayList<String> coverPhotos,
+			@RequestParam(value="posts", required=false) ArrayList<Post> posts){
 		Topic t = new Topic(name, presentation, coverPhotos, posts);
 		return topicRepository.save(t);
 	}
@@ -66,6 +66,14 @@ public class TopicController {
 			topicRepository.save(t);
 		}
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
+	public List<Post> getAllPost(@RequestParam(value="topicID") Integer topicID) {
+		Topic t = topicRepository.getOne(topicID);
+		return t.getPosts();
+	}
+	
+	
 	
 	
 	

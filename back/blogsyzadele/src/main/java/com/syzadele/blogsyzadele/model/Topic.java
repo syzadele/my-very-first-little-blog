@@ -79,7 +79,7 @@ public class Topic {
 	public void setCoverPhotos(ArrayList<String> coverPhotos) {
 		this.coverPhotos = coverPhotos;
 	}
-	public ArrayList<Post> getPosts() {
+	public List<Post> getPosts() {
 		if (this.posts != null) {
 			return (ArrayList<Post>) posts;
 		}
