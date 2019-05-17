@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,13 +70,10 @@ public class TopicController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
 	public List<Post> getAllPost(@RequestParam(value="topicID") Integer topicID) {
-		Topic t = topicRepository.getOne(topicID);
-		return t.getPosts();
+		Optional<Post> listPost = postRepository.findPostByTopicId(topicID);
+		List<Post> result = (List<Post>) listPost.get();
+		return result;
 	}
 	
-	
-	
-	
-	
-	
+
 }
