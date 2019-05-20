@@ -32,13 +32,13 @@ public class Post {
 
 	}
 	
-	public Post(String title, Date posteDate, String auther, String content, int readTimes) {
+	public Post(String title, Topic topic, Date posteDate, String auther, String content) {
 		super();
 		this.title = title;
+		this.topic = topic;
 		this.posteDate = posteDate;
 		this.auther = auther;
 		this.content = content;
-		this.readTimes = readTimes;
 	}
 
 	public Post(int id, Topic topic, String title, Date posteDate, String auther, String content, int readTimes) {

@@ -1,11 +1,9 @@
 package com.syzadele.blogsyzadele.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,8 +26,8 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos", required=false) ArrayList<String> coverPhotos,
-			@RequestParam(value="posts", required=false) ArrayList<Post> posts){
+			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos,
+			@RequestParam(value="posts", required=false) List<Post> posts){
 		Topic t = new Topic(name, presentation, coverPhotos, posts);
 		return topicRepository.save(t);
 	}
@@ -70,9 +68,11 @@ public class TopicController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
 	public List<Post> getAllPost(@RequestParam(value="topicID") Integer topicID) {
-		Optional<Post> listPost = postRepository.findPostByTopicId(topicID);
-		List<Post> result = (List<Post>) listPost.get();
-		return result;
+		Optional<Topic> ot = topicRepository.findById(topicID);
+		Topic t = ot.get();
+		List<Post> posts= t.getPosts();
+
+		return posts;
 	}
 	
 

@@ -10,23 +10,30 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.syzadele.blogsyzadele.model.Post;
+import com.syzadele.blogsyzadele.model.Topic;
 import com.syzadele.blogsyzadele.repository.PostRepository;
+import com.syzadele.blogsyzadele.repository.TopicRepository;
 
 @RestController
 @RequestMapping("/PostController")
 public class PostController {
 	@Autowired
 	PostRepository postRepository;
+	@Autowired
+	TopicRepository topicRepository;
 	
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Post create(@RequestParam(value = "title", defaultValue = "1") String title,
+			@RequestParam(value = "topicID") int topicID,
 			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
 			@RequestParam(value = "auther") String auther,
-			@RequestParam(value = "content") String content,
-			@RequestParam(value = "readTimes", defaultValue = "0") int readTimes) {
-		Post p = new Post(title, posteDate, auther, content, readTimes);
-		postRepository.save(p);
+			@RequestParam(value = "content") String content) {
+		Optional<Topic> ot = topicRepository.findById(topicID);
+		Topic t = ot.get();
+		Post p = new Post(title, null, posteDate, auther, content);
+		t.addPost(p);
+		topicRepository.save(t);
 		return p;
 	}
 	

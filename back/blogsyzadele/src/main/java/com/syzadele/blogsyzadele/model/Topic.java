@@ -1,13 +1,13 @@
 package com.syzadele.blogsyzadele.model;
-import java.util.ArrayList;
+
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -22,22 +22,22 @@ public class Topic {
 	private String name;
 	@Lob
 	private String presentation;
-	
-	private ArrayList<String> coverPhotos;
+	@ElementCollection
+	private List<String> coverPhotos;
 	@OneToMany(mappedBy="topic")
 	private List<Post> posts;
 	
 	public Topic() {
 		
 	}
-	public Topic(int id, String name, String presentation, ArrayList<String> coverPhotos) {
+	public Topic(int id, String name, String presentation, List<String> coverPhotos) {
 		this.id = id;
 		this.name = name;
 		this.presentation = presentation;
 		this.coverPhotos = coverPhotos;
 	}
 	
-	public Topic(String name, String presentation, ArrayList<String> coverPhotos, ArrayList<Post> posts) {
+	public Topic(String name, String presentation, List<String> coverPhotos, List<Post> posts) {
 		super();
 		this.name = name;
 		this.presentation = presentation;
@@ -73,19 +73,14 @@ public class Topic {
 	public void setPresentation(String presentation) {
 		this.presentation = presentation;
 	}
-	public ArrayList<String> getCoverPhotos() {
+	public List<String> getCoverPhotos() {
 		return coverPhotos;
 	}
-	public void setCoverPhotos(ArrayList<String> coverPhotos) {
+	public void setCoverPhotos(List<String> coverPhotos) {
 		this.coverPhotos = coverPhotos;
 	}
 	public List<Post> getPosts() {
-		if (this.posts != null) {
-			return (ArrayList<Post>) posts;
-		}
-		else {
-			return new ArrayList<>();
-		}
+		return posts;
 	}
 	public Post getPost(int id) {
 		for (Post p : this.posts) {
@@ -93,16 +88,12 @@ public class Topic {
 		}
 		return null;
 	}
-	public void setPosts(ArrayList<Post> posts) {
+	public void setPosts(List<Post> posts) {
 		this.posts = posts;
 	}
 		
 	public void addPost(Post post) {
-		if(this.posts == null) this.posts = new ArrayList<>();
 		this.posts.add(post);
 	}
 	
-	public void deletePost(int id) {
-		this.posts.remove(this.posts.indexOf(this.getPost(id)));
-	}
 }
