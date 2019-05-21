@@ -26,15 +26,18 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos,
+			@RequestParam(value="coverPhotos", defaultValue="") String coverPhoto,
 			@RequestParam(value="posts", required=false) List<Post> posts){
-		Topic t = new Topic(name, presentation, coverPhotos, posts);
+		Topic t = new Topic(name, presentation, coverPhoto, posts);
 		return topicRepository.save(t);
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
 	public void delete(@RequestParam(value="id") int id) {
-		topicRepository.deleteById(id);
+		Optional<Topic> ot = topicRepository.findById(id);
+		if (ot.isPresent()) {
+			topicRepository.deleteById(id);
+		}
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
@@ -45,8 +48,12 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne") 
-	public Optional<Topic> get(@RequestParam(value="id") int id) {
-		return topicRepository.findById(id);
+	public Topic get(@RequestParam(value="id") int id) {
+		Optional<Topic> ot = topicRepository.findById(id);
+		if (ot.isPresent()) {
+			return ot.get();
+		}
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAll")
@@ -59,9 +66,8 @@ public class TopicController {
 		if (topicRepository.existsById(topicID)) {
 			Optional<Topic> ot = topicRepository.findById(topicID);
 			Topic t = ot.get();
-			t.addPost(p);
 			p.setTopic(t);
-			postRepository.save(p);
+			t.addPost(p);
 			topicRepository.save(t);
 		}
 	}
@@ -69,10 +75,12 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
 	public List<Post> getAllPost(@RequestParam(value="topicID") Integer topicID) {
 		Optional<Topic> ot = topicRepository.findById(topicID);
-		Topic t = ot.get();
-		List<Post> posts= t.getPosts();
-
-		return posts;
+		if (ot.isPresent()) {
+			Topic t = ot.get();
+			List<Post> posts= t.getPosts();
+			return posts;
+		}
+		return null;
 	}
 	
 

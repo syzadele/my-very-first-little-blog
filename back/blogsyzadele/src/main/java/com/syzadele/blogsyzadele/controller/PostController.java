@@ -25,21 +25,25 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Post create(@RequestParam(value = "title", defaultValue = "1") String title,
-			@RequestParam(value = "topicID") int topicID,
+			@RequestParam(value = "topicID", defaultValue = "-1") int topicID,
 			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
 			@RequestParam(value = "auther") String auther,
 			@RequestParam(value = "content") String content) {
 		Optional<Topic> ot = topicRepository.findById(topicID);
-		Topic t = ot.get();
-		Post p = new Post(title, null, posteDate, auther, content);
-		t.addPost(p);
-		topicRepository.save(t);
-		return p;
+		if (ot.isPresent()) {
+			Topic t = ot.get();
+			Post p = new Post(title, t, posteDate, auther, content);
+			t.addPost(p);
+			topicRepository.save(t);
+			return p;
+		}
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
 	public String deleteOne(@RequestParam(value = "id") int id) {
-		if (postRepository.existsById(id)) {
+		Optional<Post> op = postRepository.findById(id);
+		if (op.isPresent()) {
 			postRepository.deleteById(id);
 			return "Delete sucessful";
 		} else {
@@ -50,14 +54,20 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
 	public void updateOne(Post p) {
-		if (postRepository.existsById(p.getId())) {
-			postRepository.save(p);
+		Optional<Post> op = postRepository.findById(p.getId());
+		if (op.isPresent()) {
+			postRepository.save(op.get());
 		}
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne")
-	public Optional<Post> getOne(@RequestParam(value = "id") int id) {
-		return postRepository.findById(id);
+	public Post getOne(@RequestParam(value = "id") int id) {
+		Optional<Post> op = postRepository.findById(id);
+		if (op.isPresent()) {
+			Post p = op.get();
+			return p;
+		}
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAll")
@@ -67,8 +77,8 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddReadTimes")
 	public void addReadTimes(@RequestParam(value = "id") int id) {
-		if (postRepository.existsById(id)) {
-			Optional<Post> op = postRepository.findById(id);
+		Optional<Post> op = postRepository.findById(id);
+		if (op.isPresent()) {
 			Post p = op.get();
 			p.setReadTimes(p.getReadTimes() + 1);
 			postRepository.save(p);
