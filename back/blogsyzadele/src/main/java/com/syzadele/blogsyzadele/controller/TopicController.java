@@ -26,9 +26,9 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos", defaultValue="") String coverPhoto,
+			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos,
 			@RequestParam(value="posts", required=false) List<Post> posts){
-		Topic t = new Topic(name, presentation, coverPhoto, posts);
+		Topic t = new Topic(name, presentation, coverPhotos, posts);
 		return topicRepository.save(t);
 	}
 	

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,25 +23,27 @@ public class Topic {
 	private String name;
 	@Lob
 	private String presentation;
-	private String coverPhoto;
+	@Column
+	@ElementCollection(targetClass=String.class)
+	private List<String> coverPhotos;
 	@OneToMany(mappedBy="topic", cascade = CascadeType.ALL)
 	private List<Post> posts;
 	
 	public Topic() {
 		
 	}
-	public Topic(int id, String name, String presentation, String coverPhoto) {
+	public Topic(int id, String name, String presentation, List<String> coverPhotos) {
 		this.id = id;
 		this.name = name;
 		this.presentation = presentation;
-		this.coverPhoto = coverPhoto;
+		this.coverPhotos = coverPhotos;
 	}
 	
-	public Topic(String name, String presentation, String coverPhoto, List<Post> posts) {
+	public Topic(String name, String presentation, List<String> coverPhotos, List<Post> posts) {
 		super();
 		this.name = name;
 		this.presentation = presentation;
-		this.coverPhoto = coverPhoto;
+		this.coverPhotos = coverPhotos;
 		this.posts = posts;
 	}
 	
@@ -64,11 +67,24 @@ public class Topic {
 	public void setPresentation(String presentation) {
 		this.presentation = presentation;
 	}
-	public String getCoverPhotos() {
-		return coverPhoto;
+	public List<String> getCoverPhotos() {
+		return coverPhotos;
 	}
-	public void setCoverPhotos(String coverPhoto) {
-		this.coverPhoto = coverPhoto;
+	
+	public void setCoverPhotos(List<String> coverPhotos) {
+		this.coverPhotos = coverPhotos;
+	}
+	
+	public void addCoverPhotos(String photo) {
+		if (!this.coverPhotos.contains(photo)) {
+			this.coverPhotos.add(photo);
+		}
+	}
+	
+	public void delete(String photo) {
+		if (this.coverPhotos.contains(photo)) {
+			this.coverPhotos.remove(photo);
+		}
 	}
 	public List<Post> getPosts() {
 		return posts;
