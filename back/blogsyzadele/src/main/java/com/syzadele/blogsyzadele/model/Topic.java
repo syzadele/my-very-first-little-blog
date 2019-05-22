@@ -6,6 +6,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,20 +14,23 @@ import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name="TOPIC")
 public class Topic {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	@Column(unique=true)
+	@Column(unique=true, length = 100)
 	private String name;
 	@Lob
 	private String presentation;
 	@Column
 	@ElementCollection(targetClass=String.class)
 	private List<String> coverPhotos;
-	@OneToMany(mappedBy="topic", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+	@JsonIgnoreProperties("topic")
 	private List<Post> posts;
 	
 	public Topic() {

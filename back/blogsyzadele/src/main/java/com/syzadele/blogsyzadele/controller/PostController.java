@@ -36,8 +36,12 @@ public class PostController {
 			t.addPost(p);
 			topicRepository.save(t);
 			return p;
+		} else {
+			Post p = new Post(title, null, posteDate, auther, content);
+			postRepository.save(p);
+			return p;
 		}
-		return null;
+		
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")

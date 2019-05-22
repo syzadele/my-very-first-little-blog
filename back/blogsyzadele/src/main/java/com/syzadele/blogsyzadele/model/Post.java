@@ -1,5 +1,6 @@
 package com.syzadele.blogsyzadele.model;
 import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="POST")
@@ -26,6 +29,7 @@ public class Post {
 	private int readTimes;
 	@ManyToOne
 	@JoinColumn(name="topic_id")
+	@JsonIgnoreProperties("posts")
 	private Topic topic;
 	
 	public Post() {
@@ -39,6 +43,7 @@ public class Post {
 		this.posteDate = posteDate;
 		this.auther = auther;
 		this.content = content;
+		this.readTimes = 0;
 	}
 
 	public Post(int id, Topic topic, String title, Date posteDate, String auther, String content, int readTimes) {
