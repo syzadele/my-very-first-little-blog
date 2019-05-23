@@ -85,7 +85,7 @@ public class Topic {
 		}
 	}
 	
-	public void delete(String photo) {
+	public void deleteCoverPhotos(String photo) {
 		if (this.coverPhotos.contains(photo)) {
 			this.coverPhotos.remove(photo);
 		}

@@ -43,7 +43,7 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
 	public void update(Topic t) {
 		if (topicRepository.existsById(t.getId())) {
-			topicRepository.save(t);
+			topicRepository.saveAndFlush(t);
 		}
 	}
 	
@@ -68,7 +68,7 @@ public class TopicController {
 			Topic t = ot.get();
 			p.setTopic(t);
 			t.addPost(p);
-			topicRepository.save(t);
+			topicRepository.saveAndFlush(t);
 		}
 	}
 	

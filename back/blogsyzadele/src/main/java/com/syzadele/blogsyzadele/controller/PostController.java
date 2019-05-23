@@ -24,13 +24,14 @@ public class PostController {
 	
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
-	public Post create(@RequestParam(value = "title", defaultValue = "1") String title,
+	public Post create(@RequestParam(value = "title", defaultValue = "untitle post") String title,
 			@RequestParam(value = "topicID", defaultValue = "-1") int topicID,
 			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
-			@RequestParam(value = "auther") String auther,
-			@RequestParam(value = "content") String content) {
-		Optional<Topic> ot = topicRepository.findById(topicID);
-		if (ot.isPresent()) {
+			@RequestParam(value = "auther", required = false) String auther,
+			@RequestParam(value = "content", required = false) String content) {
+		
+		if (topicRepository.existsById(topicID)) {
+			Optional<Topic> ot = topicRepository.findById(topicID);
 			Topic t = ot.get();
 			Post p = new Post(title, t, posteDate, auther, content);
 			t.addPost(p);
@@ -46,8 +47,8 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
 	public String deleteOne(@RequestParam(value = "id") int id) {
-		Optional<Post> op = postRepository.findById(id);
-		if (op.isPresent()) {
+		
+		if (postRepository.existsById(id)) {
 			postRepository.deleteById(id);
 			return "Delete sucessful";
 		} else {
@@ -57,10 +58,26 @@ public class PostController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
-	public void updateOne(Post p) {
-		Optional<Post> op = postRepository.findById(p.getId());
-		if (op.isPresent()) {
-			postRepository.save(op.get());
+	public String updateOne(Post p, @RequestParam(value="topicID", required=false) Integer topicID) {
+		
+		if (postRepository.existsById(p.getId())) {
+			if(topicID == null) {
+				Post originP = postRepository.findById(p.getId()).get();
+				p.setTopic(originP.getTopic());
+				postRepository.saveAndFlush(p);
+				return "Update sucessful";
+				
+			} else if (topicRepository.findById(topicID).isPresent()) {
+				p.setTopic(topicRepository.findById(topicID).get());
+				postRepository.saveAndFlush(p);
+				return "Update sucessful";
+				
+			} else {
+				return "Topic not found";
+			}
+			
+		} else {
+			return "Post not found";
 		}
 	}
 	
@@ -85,7 +102,7 @@ public class PostController {
 		if (op.isPresent()) {
 			Post p = op.get();
 			p.setReadTimes(p.getReadTimes() + 1);
-			postRepository.save(p);
+			postRepository.saveAndFlush(p);
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.syzadele.blogsyzadele.model;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,6 +21,7 @@ public class Post {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@Column(unique=true, length=100)
 	private String title;
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date posteDate;
@@ -46,7 +48,7 @@ public class Post {
 		this.readTimes = 0;
 	}
 
-	public Post(int id, Topic topic, String title, Date posteDate, String auther, String content, int readTimes) {
+	public Post(int id, Topic topic, String title, Date posteDate, String auther, String content) {
 		super();
 		this.id = id;
 		this.topic = topic;
@@ -54,7 +56,7 @@ public class Post {
 		this.posteDate = posteDate;
 		this.auther = auther;
 		this.content = content;
-		this.readTimes = readTimes;
+		this.readTimes = 0;
 	}
 
 	public int getId() {
@@ -112,5 +114,6 @@ public class Post {
 	public void setReadTimes(int readTimes) {
 		this.readTimes = readTimes;
 	}
+	
 
 }
