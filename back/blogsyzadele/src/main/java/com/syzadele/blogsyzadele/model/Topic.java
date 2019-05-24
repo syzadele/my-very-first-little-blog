@@ -36,8 +36,7 @@ public class Topic {
 	public Topic() {
 		
 	}
-	public Topic(int id, String name, String presentation, List<String> coverPhotos) {
-		this.id = id;
+	public Topic(String name, String presentation, List<String> coverPhotos) {
 		this.name = name;
 		this.presentation = presentation;
 		this.coverPhotos = coverPhotos;

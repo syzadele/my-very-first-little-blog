@@ -70,6 +70,7 @@ public class PostController {
 			} else if (topicRepository.findById(topicID).isPresent()) {
 				p.setTopic(topicRepository.findById(topicID).get());
 				postRepository.saveAndFlush(p);
+				
 				return "Update sucessful";
 				
 			} else {

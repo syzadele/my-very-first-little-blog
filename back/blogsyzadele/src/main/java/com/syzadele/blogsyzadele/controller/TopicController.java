@@ -26,16 +26,15 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos,
-			@RequestParam(value="posts", required=false) List<Post> posts){
-		Topic t = new Topic(name, presentation, coverPhotos, posts);
+			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos){
+		
+		Topic t = new Topic(name, presentation, coverPhotos);
 		return topicRepository.save(t);
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
 	public void delete(@RequestParam(value="id") int id) {
-		Optional<Topic> ot = topicRepository.findById(id);
-		if (ot.isPresent()) {
+		if (topicRepository.existsById(id)) {
 			topicRepository.deleteById(id);
 		}
 	}
@@ -43,6 +42,8 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
 	public void update(Topic t) {
 		if (topicRepository.existsById(t.getId())) {
+			List<Post> originPosts = topicRepository.findById(t.getId()).get().getPosts();
+			t.setPosts(originPosts);
 			topicRepository.saveAndFlush(t);
 		}
 	}
@@ -62,13 +63,15 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddPost")
-	public void addPost(Post p, @RequestParam(value="topicID") Integer topicID) {
-		if (topicRepository.existsById(topicID)) {
-			Optional<Topic> ot = topicRepository.findById(topicID);
-			Topic t = ot.get();
+	public String addPost(Post p, @RequestParam(value="topicID") Integer topicID) {
+		if (topicRepository.existsById(topicID) && postRepository.existsById(p.getId())) {
+			Topic t = topicRepository.findById(topicID).get();
 			p.setTopic(t);
 			t.addPost(p);
 			topicRepository.saveAndFlush(t);
+			return "Post Added.";
+		} else {
+			return "Topic or post not found.";
 		}
 	}
 	
