@@ -33,10 +33,12 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
-	public void delete(@RequestParam(value="id") int id) {
+	public String delete(@RequestParam(value="id") int id) {
 		if (topicRepository.existsById(id)) {
 			topicRepository.deleteById(id);
+			return "delete successful.";
 		}
+		return "Topic not found.";
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
@@ -49,7 +51,7 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne") 
-	public Topic get(@RequestParam(value="id") int id) {
+	public Topic getTopic(@RequestParam(value="id") int id) {
 		Optional<Topic> ot = topicRepository.findById(id);
 		if (ot.isPresent()) {
 			return ot.get();
@@ -58,14 +60,15 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAll")
-	public List<Topic> getAll(){
+	public List<Topic> getAllTopic(){
 		return topicRepository.findAll();
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddPost")
-	public String addPost(Post p, @RequestParam(value="topicID") Integer topicID) {
-		if (topicRepository.existsById(topicID) && postRepository.existsById(p.getId())) {
+	public String addPost(@RequestParam(value="postID") int postID, @RequestParam(value="topicID") int topicID) {
+		if (topicRepository.existsById(topicID) && postRepository.existsById(postID)) {
 			Topic t = topicRepository.findById(topicID).get();
+			Post p = postRepository.findById(postID).get();
 			p.setTopic(t);
 			t.addPost(p);
 			topicRepository.saveAndFlush(t);
@@ -76,7 +79,7 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
-	public List<Post> getAllPost(@RequestParam(value="topicID") Integer topicID) {
+	public List<Post> getAllPost(@RequestParam(value="topicID") int topicID) {
 		Optional<Topic> ot = topicRepository.findById(topicID);
 		if (ot.isPresent()) {
 			Topic t = ot.get();
