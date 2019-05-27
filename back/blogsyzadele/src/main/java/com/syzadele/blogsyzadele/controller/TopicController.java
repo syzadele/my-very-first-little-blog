@@ -42,12 +42,14 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
-	public void update(Topic t) {
+	public String update(Topic t) {
 		if (topicRepository.existsById(t.getId())) {
 			List<Post> originPosts = topicRepository.findById(t.getId()).get().getPosts();
 			t.setPosts(originPosts);
 			topicRepository.saveAndFlush(t);
+			return "update successful.";
 		}
+		return "topic not found.";
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne") 
