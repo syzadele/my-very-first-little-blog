@@ -16,8 +16,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.syzadele.blogsyzadele.model.DBFile;
 import com.syzadele.blogsyzadele.model.UploadFileResponse;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

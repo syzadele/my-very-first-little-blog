@@ -1,8 +1,11 @@
 package com.syzadele.blogsyzadele.model;
 import org.hibernate.annotations.GenericGenerator;
+
+
 import javax.persistence.*;
 
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "files")
 public class DBFile {
 	@Id
@@ -11,9 +14,12 @@ public class DBFile {
     private String id;
 	private String fileName;
 
-    private String fileType;
-
-    public byte[] getData() {
+	private String fileType;
+	
+	@Lob
+	private byte[] data;
+    
+	public byte[] getData() {
 		return data;
 	}
 
@@ -29,8 +35,7 @@ public class DBFile {
 		this.id = id;
 	}
 
-	@Lob
-    private byte[] data;
+	
 
     public DBFile() {
 

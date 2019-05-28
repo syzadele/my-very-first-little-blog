@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.syzadele.blogsyzadele.model.Post;
 import com.syzadele.blogsyzadele.model.Topic;
+import com.syzadele.blogsyzadele.model.TopicCoverPhotos;
+import com.syzadele.blogsyzadele.controller.TopicCoverPhotoService;
 import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
 
@@ -19,16 +22,25 @@ import com.syzadele.blogsyzadele.repository.TopicRepository;
 @RequestMapping("/TopicController")
 public class TopicController {
 	@Autowired
-	TopicRepository topicRepository;
+	private TopicRepository topicRepository;
 	@Autowired
-	PostRepository postRepository;
+	private PostRepository postRepository;
+	@Autowired
+	private TopicCoverPhotoService tcps;
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="coverPhotos", required=false) List<String> coverPhotos){
+			@RequestParam(value="files", required=false) MultipartFile[] files){
 		
-		Topic t = new Topic(name, presentation, coverPhotos);
+		Topic t = new Topic(name, presentation);
+		
+		if (files != null) {
+			topicRepository.saveAndFlush(t);
+			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(files, t);
+			t.setCoverPhotos(tcp);
+		}
+		
 		return topicRepository.save(t);
 	}
 	
