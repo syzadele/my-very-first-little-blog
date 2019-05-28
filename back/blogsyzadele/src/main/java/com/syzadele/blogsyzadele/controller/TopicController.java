@@ -103,5 +103,29 @@ public class TopicController {
 		return null;
 	}
 	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
+	public Topic addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			
+			Topic t = topicRepository.findById(id).get();
+			t.addCoverPhotos(tcps.storeFile(file, t));
+			return topicRepository.save(t);
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotos")
+	public Topic addCoverPhotos(@RequestParam(value="files")  MultipartFile[] files, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			
+			Topic t = topicRepository.findById(id).get();
+			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(files, t);
+			t.addMCoverPhotos(tcp);
+			return topicRepository.saveAndFlush(t);
+		}
+		return null;
+	}
+
+	
 
 }

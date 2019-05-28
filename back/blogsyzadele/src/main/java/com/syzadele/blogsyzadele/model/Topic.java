@@ -89,6 +89,10 @@ public class Topic {
 		}
 	}
 	
+	public void addMCoverPhotos(List<TopicCoverPhotos> photos) {
+		this.coverPhotos.addAll(photos);
+	}
+	
 	public void deleteCoverPhotos(TopicCoverPhotos photo) {
 		if (this.coverPhotos.contains(photo)) {
 			this.coverPhotos.remove(photo);
