@@ -3,6 +3,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,30 +58,61 @@ public class PostController {
 		}
 		
 	}
+	@Transactional
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOneByTitle")
+	public String deleteOneByTitle(@RequestParam(value = "title") String title) {
+		
+		if (postRepository.existsByTitle(title)) {
+			postRepository.deleteByTitle(title);
+			return "Delete sucessful";
+		} else {
+			return "Post unexiste!";
+		}
+		
+	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
-	public String updateOne(Post p, @RequestParam(value="topicID", required=false) Integer topicID) {
+	public Post updateOne(Post p, @RequestParam(value="topicID", required=false) Integer topicID) {
 		
 		if (postRepository.existsById(p.getId())) {
 			if(topicID == null) {
 				Post originP = postRepository.findById(p.getId()).get();
 				p.setTopic(originP.getTopic());
-				postRepository.saveAndFlush(p);
-				return "Update sucessful";
+				return postRepository.saveAndFlush(p);
 				
 			} else if (topicRepository.findById(topicID).isPresent()) {
 				p.setTopic(topicRepository.findById(topicID).get());
-				postRepository.saveAndFlush(p);
+				return postRepository.saveAndFlush(p);
+			} else {
+				System.out.println("topic not found");
+			}
+		} else {
+			System.out.println("post not found");
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOneByTitleAndName")
+	public Post updateOneByTitleAndName(Post p, @RequestParam(value="title", required=false) String title, @RequestParam(value="name", required=false) String name) {
+		
+		if (postRepository.existsByTitle(title)) {
+			if(name == null) {
+				Post originP = postRepository.findByTitle(title);
+				p.setTopic(originP.getTopic());
+				return postRepository.saveAndFlush(p);
 				
-				return "Update sucessful";
+			} else if (topicRepository.existsByName(name)) {
+				p.setTopic(topicRepository.findByName(name));
+				return postRepository.saveAndFlush(p);
 				
 			} else {
-				return "Topic not found";
+				System.out.println("Topic not found");
 			}
 			
 		} else {
-			return "Post not found";
+			System.out.println("Post not found");
 		}
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne")
@@ -87,6 +120,15 @@ public class PostController {
 		Optional<Post> op = postRepository.findById(id);
 		if (op.isPresent()) {
 			Post p = op.get();
+			return p;
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetOneByTitle")
+	public Post getOneByTitle(@RequestParam(value = "title") String title) {
+		if (postRepository.existsByTitle(title)) {
+			Post p = postRepository.findByTitle(title);
 			return p;
 		}
 		return null;
@@ -105,6 +147,16 @@ public class PostController {
 			p.setReadTimes(p.getReadTimes() + 1);
 			postRepository.saveAndFlush(p);
 		}
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddReadTimesByTitle")
+	public Post addReadTimesByTitle(@RequestParam(value = "title") String title) {
+		if (postRepository.existsByTitle(title)) {
+			Post p = postRepository.findByTitle(title);
+			p.setReadTimes(p.getReadTimes() + 1);
+			return postRepository.saveAndFlush(p);
+		}
+		return null;
 	}
 
 }

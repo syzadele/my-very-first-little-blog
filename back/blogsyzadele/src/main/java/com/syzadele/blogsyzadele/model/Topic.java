@@ -33,6 +33,7 @@ public class Topic {
 	@JsonIgnoreProperties("topic")
 	private List<Post> posts;
 	
+	
 	public Topic() {
 		
 	}

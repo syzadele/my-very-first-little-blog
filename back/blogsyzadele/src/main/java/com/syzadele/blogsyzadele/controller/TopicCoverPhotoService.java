@@ -49,4 +49,12 @@ public class TopicCoverPhotoService {
         return (TopicCoverPhotos) dbfRepository.findById(fileId)
                 .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + fileId));
     }
+	
+	public boolean deleteFile(String id) {
+		if (dbfRepository.existsById(id)) {
+			dbfRepository.deleteById(id);
+			return true;
+		}
+		return false;
+	}
 }

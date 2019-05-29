@@ -3,6 +3,9 @@ package com.syzadele.blogsyzadele.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +30,7 @@ public class TopicController {
 	private PostRepository postRepository;
 	@Autowired
 	private TopicCoverPhotoService tcps;
+	
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
@@ -53,15 +57,35 @@ public class TopicController {
 		return "Topic not found.";
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
-	public String update(Topic t) {
-		if (topicRepository.existsById(t.getId())) {
-			List<Post> originPosts = topicRepository.findById(t.getId()).get().getPosts();
-			t.setPosts(originPosts);
-			topicRepository.saveAndFlush(t);
-			return "update successful.";
+	@Transactional 
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOneByName")
+	public void deleteOneByName(@RequestParam(value="name") String name) {
+		if (topicRepository.findByName(name) != null) {
+			topicRepository.deleteByName(name);
 		}
-		return "topic not found.";
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/UpdateOne")
+	public Topic update(Topic t) {
+		if (topicRepository.existsById(t.getId())) {
+			Topic originT = topicRepository.findById(t.getId()).get();
+			List<Post> originPosts = originT.getPosts();
+			List<TopicCoverPhotos> ltcp = originT.getCoverPhotos();
+			t.setPosts(originPosts);
+			t.setCoverPhotos(ltcp);
+			return topicRepository.saveAndFlush(t);
+		}
+		return null;
+	}
+	// In fact you can only update presentation here
+	@RequestMapping(method = RequestMethod.POST, value = "UpdateOneByName")
+	public Topic updateOneByName(Topic t, @RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			Topic originT = topicRepository.findByName(name);
+			originT.setPresentation(t.getPresentation());
+			return topicRepository.save(originT);
+		}
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetOne") 
@@ -72,6 +96,14 @@ public class TopicController {
 		}
 		return null;
 	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/GetOneByName")
+	public Topic getTopicByName(@RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			return topicRepository.findByName(name);
+		}
+		return null;
+	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAll")
 	public List<Topic> getAllTopic(){
@@ -79,18 +111,20 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddPost")
-	public String addPost(@RequestParam(value="postID") int postID, @RequestParam(value="topicID") int topicID) {
+	public Topic addPost(@RequestParam(value="postID") int postID, @RequestParam(value="topicID") int topicID) {
 		if (topicRepository.existsById(topicID) && postRepository.existsById(postID)) {
 			Topic t = topicRepository.findById(topicID).get();
 			Post p = postRepository.findById(postID).get();
 			p.setTopic(t);
 			t.addPost(p);
-			topicRepository.saveAndFlush(t);
-			return "Post Added.";
+			return topicRepository.saveAndFlush(t);
 		} else {
-			return "Topic or post not found.";
+			return null;
 		}
 	}
+	
+	//@RequestMapping(method = RequestMethod.POST, value = "/AddPostByNames")
+	//public Topic addPostByNames(@RequestParam(va))
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
 	public List<Post> getAllPost(@RequestParam(value="topicID") int topicID) {
@@ -125,6 +159,18 @@ public class TopicController {
 		}
 		return null;
 	}
+		
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhoto")
+	public Topic deleteCoverPhoto(@RequestParam(value="photoId") String photoID, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			boolean result = tcps.deleteFile(photoID);
+			if (result == true) {
+				return topicRepository.findById(id).get();
+			}
+		} 
+		return null;
+	}
+	
 
 	
 
