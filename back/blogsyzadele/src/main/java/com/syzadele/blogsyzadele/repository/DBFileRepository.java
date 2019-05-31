@@ -7,5 +7,7 @@ import com.syzadele.blogsyzadele.model.DBFile;
 
 @Repository	
 public interface DBFileRepository extends JpaRepository<DBFile, String> {
-
+	boolean existsByFileName(String fileName);
+	DBFile findByFileName(String fileName);
+	void deleteByFileName(String fileName);
 }

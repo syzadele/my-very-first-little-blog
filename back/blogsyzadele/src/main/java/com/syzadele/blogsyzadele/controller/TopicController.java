@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -69,14 +68,13 @@ public class TopicController {
 	public Topic update(Topic t) {
 		if (topicRepository.existsById(t.getId())) {
 			Topic originT = topicRepository.findById(t.getId()).get();
-			List<Post> originPosts = originT.getPosts();
-			List<TopicCoverPhotos> ltcp = originT.getCoverPhotos();
-			t.setPosts(originPosts);
-			t.setCoverPhotos(ltcp);
-			return topicRepository.saveAndFlush(t);
+			originT.setName(t.getName());
+			originT.setPresentation(t.getPresentation());
+			return topicRepository.saveAndFlush(originT);
 		}
 		return null;
 	}
+	
 	// In fact you can only update presentation here
 	@RequestMapping(method = RequestMethod.POST, value = "UpdateOneByName")
 	public Topic updateOneByName(Topic t, @RequestParam(value="name") String name) {
@@ -123,16 +121,34 @@ public class TopicController {
 		}
 	}
 	
-	//@RequestMapping(method = RequestMethod.POST, value = "/AddPostByNames")
-	//public Topic addPostByNames(@RequestParam(va))
+	@RequestMapping(method = RequestMethod.POST, value = "/AddPostByNameAndTitle")
+	public Topic addPostByNames(@RequestParam(value = "title") String title, @RequestParam(value = "name") String name) {
+		if (topicRepository.existsByName(name) && postRepository.existsByTitle(title)) {
+			Topic t = topicRepository.findByName(name);
+			Post p = postRepository.findByTitle(title);
+			p.setTopic(t);
+			t.addPost(p);
+			return topicRepository.saveAndFlush(t);
+		} else {
+			return null;
+		}
+	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPost")
 	public List<Post> getAllPost(@RequestParam(value="topicID") int topicID) {
 		Optional<Topic> ot = topicRepository.findById(topicID);
 		if (ot.isPresent()) {
 			Topic t = ot.get();
-			List<Post> posts= t.getPosts();
-			return posts;
+			return t.getPosts();
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetAllPostByName")
+	public List<Post> getAllPostByName(@RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			Topic t = topicRepository.findByName(name);
+			return t.getPosts();
 		}
 		return null;
 	}
@@ -142,6 +158,16 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			
 			Topic t = topicRepository.findById(id).get();
+			t.addCoverPhotos(tcps.storeFile(file, t));
+			return topicRepository.save(t);
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotoByName")
+	public Topic addCoverPhotoByName(@RequestParam(value="file") MultipartFile file, @RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			Topic t = topicRepository.findByName(name);
 			t.addCoverPhotos(tcps.storeFile(file, t));
 			return topicRepository.save(t);
 		}
@@ -159,6 +185,17 @@ public class TopicController {
 		}
 		return null;
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotosByName")
+	public Topic addCoverPhotosByName(@RequestParam(value="file") MultipartFile[] file, @RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			Topic t = topicRepository.findByName(name);
+			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(file, t);
+			t.addMCoverPhotos(tcp);
+			return topicRepository.saveAndFlush(t);
+		}
+		return null;
+ 	}
 		
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhoto")
 	public Topic deleteCoverPhoto(@RequestParam(value="photoId") String photoID, @RequestParam(value="id") int id) {
@@ -170,6 +207,18 @@ public class TopicController {
 		} 
 		return null;
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "DeleteCoverPhotoByNames")
+	public Topic deleteCoverPhotosByNames(@RequestParam(value="fileName") String fileName, @RequestParam(value="name") String name) {
+		if (topicRepository.existsByName(name)) {
+			boolean result = tcps.deleteFileByFileName(fileName);
+			if (result == true) {
+				return topicRepository.findByName(name);
+			}
+		}
+		return null;
+	}
+	
 	
 
 	

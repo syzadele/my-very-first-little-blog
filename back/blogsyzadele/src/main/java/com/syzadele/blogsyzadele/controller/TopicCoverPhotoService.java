@@ -50,11 +50,27 @@ public class TopicCoverPhotoService {
                 .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + fileId));
     }
 	
+	public TopicCoverPhotos getFileByName(String fileName) {
+		if (dbfRepository.existsByFileName(fileName)) {
+			return (TopicCoverPhotos) dbfRepository.findByFileName(fileName);
+		} else {
+			throw new MyFileNotFoundException("File not found with file name " + fileName);
+		}
+	}
+	
 	public boolean deleteFile(String id) {
 		if (dbfRepository.existsById(id)) {
 			dbfRepository.deleteById(id);
 			return true;
 		}
+		return false;
+	}
+	
+	public boolean deleteFileByFileName(String fileName) {
+		if (dbfRepository.existsByFileName(fileName)) {
+			dbfRepository.deleteByFileName(fileName);
+			return true;
+		} 
 		return false;
 	}
 }

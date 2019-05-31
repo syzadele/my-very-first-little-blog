@@ -1,4 +1,6 @@
 package com.syzadele.blogsyzadele.controller;
+
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -27,18 +29,47 @@ public class PostController {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Post create(@RequestParam(value = "title", defaultValue = "untitle post") String title,
-			@RequestParam(value = "topicID", defaultValue = "-1") int topicID,
+			@RequestParam(value = "topicID", defaultValue = "-1") Integer topicID,
+			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
+			@RequestParam(value = "auther", required = false) String auther,
+			@RequestParam(value = "content", required = false) String content) throws ParseException {
+		
+		if (topicID != null) {
+			if (topicRepository.existsById(topicID)) {
+				Optional<Topic> ot = topicRepository.findById(topicID);
+				Topic t = ot.get();
+				Post p = new Post(title, t, posteDate, auther, content);
+				t.addPost(p);
+				topicRepository.save(t);
+				return p;
+			} else {
+				return null;
+			}
+		} else {
+			Post p = new Post(title, null, posteDate, auther, content);
+			postRepository.save(p);
+			return p;
+		}
+		
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/CreateOneByTopicName")
+	public Post createByTopicName(@RequestParam(value = "title", defaultValue = "untitle post") String title,
+			@RequestParam(value = "name", defaultValue = "-1") String topicName,
 			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
 			@RequestParam(value = "auther", required = false) String auther,
 			@RequestParam(value = "content", required = false) String content) {
 		
-		if (topicRepository.existsById(topicID)) {
-			Optional<Topic> ot = topicRepository.findById(topicID);
-			Topic t = ot.get();
-			Post p = new Post(title, t, posteDate, auther, content);
-			t.addPost(p);
-			topicRepository.save(t);
-			return p;
+		if (topicName != null) {
+			if (topicRepository.existsByName(topicName)) {
+				Topic t = topicRepository.findByName(topicName);
+				Post p = new Post(title, t, posteDate, auther, content);
+				t.addPost(p);
+				topicRepository.save(t);
+				return p;
+			} else {
+				return null;
+			}
 		} else {
 			Post p = new Post(title, null, posteDate, auther, content);
 			postRepository.save(p);
@@ -98,12 +129,19 @@ public class PostController {
 		if (postRepository.existsByTitle(title)) {
 			if(name == null) {
 				Post originP = postRepository.findByTitle(title);
-				p.setTopic(originP.getTopic());
-				return postRepository.saveAndFlush(p);
+				originP.setAuther(p.getAuther());
+				originP.setContent(p.getContent());
+				originP.setPosteDate(p.getPosteDate());
+				return postRepository.saveAndFlush(originP);
 				
 			} else if (topicRepository.existsByName(name)) {
-				p.setTopic(topicRepository.findByName(name));
-				return postRepository.saveAndFlush(p);
+				Post originP = postRepository.findByTitle(title);
+				Topic t = topicRepository.findByName(name);
+				originP.setAuther(p.getAuther());
+				originP.setContent(p.getContent());
+				originP.setPosteDate(p.getPosteDate());
+				originP.setTopic(t);
+				return postRepository.saveAndFlush(originP);
 				
 			} else {
 				System.out.println("Topic not found");
@@ -122,6 +160,7 @@ public class PostController {
 			Post p = op.get();
 			return p;
 		}
+		System.out.println("Post not found");
 		return null;
 	}
 	
@@ -131,6 +170,7 @@ public class PostController {
 			Post p = postRepository.findByTitle(title);
 			return p;
 		}
+		System.out.println("Post not found");
 		return null;
 	}
 	
@@ -140,13 +180,15 @@ public class PostController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddReadTimes")
-	public void addReadTimes(@RequestParam(value = "id") int id) {
+	public Post addReadTimes(@RequestParam(value = "id") int id) {
 		Optional<Post> op = postRepository.findById(id);
 		if (op.isPresent()) {
 			Post p = op.get();
 			p.setReadTimes(p.getReadTimes() + 1);
-			postRepository.saveAndFlush(p);
+			return postRepository.saveAndFlush(p);
 		}
+		System.out.println("Post not found");
+		return null;
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddReadTimesByTitle")
@@ -156,6 +198,7 @@ public class PostController {
 			p.setReadTimes(p.getReadTimes() + 1);
 			return postRepository.saveAndFlush(p);
 		}
+		System.out.println("Post not found");
 		return null;
 	}
 
