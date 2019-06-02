@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="TOPIC")
+@JsonIgnoreProperties("coverPhotos")
 public class Topic {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +29,7 @@ public class Topic {
 	private String presentation;
 	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonIgnoreProperties("topic")
-	private List<TopicCoverPhotos> coverPhotos;
+	private List<TopicCoverPhoto> coverPhotos;
 	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonIgnoreProperties("topic")
 	private List<Post> posts;
@@ -42,13 +43,13 @@ public class Topic {
 		this.presentation = presentation;
 	}
 	
-	public Topic(String name, String presentation, List<TopicCoverPhotos> coverPhotos) {
+	public Topic(String name, String presentation, List<TopicCoverPhoto> coverPhotos) {
 		this.name = name;
 		this.presentation = presentation;
 		this.coverPhotos = coverPhotos;
 	}
 	
-	public Topic(String name, String presentation, List<TopicCoverPhotos> coverPhotos, List<Post> posts) {
+	public Topic(String name, String presentation, List<TopicCoverPhoto> coverPhotos, List<Post> posts) {
 		super();
 		this.name = name;
 		this.presentation = presentation;
@@ -76,25 +77,25 @@ public class Topic {
 	public void setPresentation(String presentation) {
 		this.presentation = presentation;
 	}
-	public List<TopicCoverPhotos> getCoverPhotos() {
+	public List<TopicCoverPhoto> getCoverPhotos() {
 		return coverPhotos;
 	}
 	
-	public void setCoverPhotos(List<TopicCoverPhotos> coverPhotos) {
+	public void setCoverPhotos(List<TopicCoverPhoto> coverPhotos) {
 		this.coverPhotos = coverPhotos;
 	}
 	
-	public void addCoverPhotos(TopicCoverPhotos photo) {
+	public void addCoverPhotos(TopicCoverPhoto photo) {
 		if (!this.coverPhotos.contains(photo)) {
 			this.coverPhotos.add(photo);
 		}
 	}
 	
-	public void addMCoverPhotos(List<TopicCoverPhotos> photos) {
+	public void addMCoverPhotos(List<TopicCoverPhoto> photos) {
 		this.coverPhotos.addAll(photos);
 	}
 	
-	public void deleteCoverPhotos(TopicCoverPhotos photo) {
+	public void deleteCoverPhotos(TopicCoverPhoto photo) {
 		if (this.coverPhotos.contains(photo)) {
 			this.coverPhotos.remove(photo);
 		}

@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.syzadele.blogsyzadele.exception.FileStorageException;
 import com.syzadele.blogsyzadele.exception.MyFileNotFoundException;
 import com.syzadele.blogsyzadele.model.Topic;
-import com.syzadele.blogsyzadele.model.TopicCoverPhotos;
+import com.syzadele.blogsyzadele.model.TopicCoverPhoto;
 import com.syzadele.blogsyzadele.repository.DBFileRepository;
 
 @Service
@@ -21,7 +21,7 @@ public class TopicCoverPhotoService {
 	@Autowired
 	private DBFileRepository dbfRepository;
 	
-	public TopicCoverPhotos storeFile(MultipartFile file, Topic topic) {
+	public TopicCoverPhoto storeFile(MultipartFile file, Topic topic) {
         // Normalize file name
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         
@@ -30,7 +30,7 @@ public class TopicCoverPhotoService {
             if(fileName.contains("..")) {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
             }
-            TopicCoverPhotos tCoverPhotos = new TopicCoverPhotos(fileName, file.getContentType(), file.getBytes(), topic);
+            TopicCoverPhoto tCoverPhotos = new TopicCoverPhoto(fileName, file.getContentType(), file.getBytes(), topic);
             
             return dbfRepository.save(tCoverPhotos);
         } catch (IOException ex) {
@@ -38,21 +38,21 @@ public class TopicCoverPhotoService {
         }
     }
 	
-	public List<TopicCoverPhotos> storeMultipleFile(MultipartFile[] files, Topic topic) {
+	public List<TopicCoverPhoto> storeMultipleFile(MultipartFile[] files, Topic topic) {
 		return Arrays.asList(files)
                 .stream()
                 .map(file -> storeFile(file, topic))
                 .collect(Collectors.toList());
 	}
 	
-	public TopicCoverPhotos getFile(String fileId) {
-        return (TopicCoverPhotos) dbfRepository.findById(fileId)
+	public TopicCoverPhoto getFile(String fileId) {
+        return (TopicCoverPhoto) dbfRepository.findById(fileId)
                 .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + fileId));
     }
 	
-	public TopicCoverPhotos getFileByName(String fileName) {
+	public TopicCoverPhoto getFileByName(String fileName) {
 		if (dbfRepository.existsByFileName(fileName)) {
-			return (TopicCoverPhotos) dbfRepository.findByFileName(fileName);
+			return (TopicCoverPhoto) dbfRepository.findByFileName(fileName);
 		} else {
 			throw new MyFileNotFoundException("File not found with file name " + fileName);
 		}

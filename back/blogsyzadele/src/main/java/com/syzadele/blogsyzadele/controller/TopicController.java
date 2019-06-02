@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.syzadele.blogsyzadele.model.Post;
 import com.syzadele.blogsyzadele.model.Topic;
-import com.syzadele.blogsyzadele.model.TopicCoverPhotos;
+import com.syzadele.blogsyzadele.model.TopicCoverPhoto;
 import com.syzadele.blogsyzadele.controller.TopicCoverPhotoService;
 import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
@@ -30,7 +30,6 @@ public class TopicController {
 	@Autowired
 	private TopicCoverPhotoService tcps;
 	
-	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
@@ -39,12 +38,15 @@ public class TopicController {
 		Topic t = new Topic(name, presentation);
 		
 		if (files != null) {
-			topicRepository.saveAndFlush(t);
-			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(files, t);
+			topicRepository.save(t);
+			List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
 			t.setCoverPhotos(tcp);
+			return topicRepository.save(t);
+		} else {
+			return topicRepository.save(t);
 		}
 		
-		return topicRepository.save(t);
+		
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
@@ -179,7 +181,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			
 			Topic t = topicRepository.findById(id).get();
-			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(files, t);
+			List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
 			t.addMCoverPhotos(tcp);
 			return topicRepository.saveAndFlush(t);
 		}
@@ -187,10 +189,10 @@ public class TopicController {
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotosByName")
-	public Topic addCoverPhotosByName(@RequestParam(value="file") MultipartFile[] file, @RequestParam(value="name") String name) {
+	public Topic addCoverPhotosByName(@RequestParam(value="files", required=true) MultipartFile[] files, @RequestParam(value="name") String name) {
 		if (topicRepository.existsByName(name)) {
 			Topic t = topicRepository.findByName(name);
-			List<TopicCoverPhotos> tcp = tcps.storeMultipleFile(file, t);
+			List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
 			t.addMCoverPhotos(tcp);
 			return topicRepository.saveAndFlush(t);
 		}

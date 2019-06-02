@@ -10,20 +10,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @DiscriminatorValue("Topic")
-@Table(name="TopicCoverPhotos")
-public class TopicCoverPhotos extends DBFile{
+@Table(name="TopicCoverPhoto")
+public class TopicCoverPhoto extends DBFile{
 	
 	@ManyToOne
 	@JoinColumn(name="topic_id")
-	@JsonIgnoreProperties(ignoreUnknown = true, value = {"posts", "TopicCoverPhotos"})
+	@JsonIgnoreProperties(ignoreUnknown = true, value = {"posts", "TopicCoverPhoto"})
 	private Topic topic;
 
-	public TopicCoverPhotos() {
+	public TopicCoverPhoto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public TopicCoverPhotos(String fileName, String fileType, byte[] data, Topic topic) {
+	public TopicCoverPhoto(String fileName, String fileType, byte[] data, Topic topic) {
 		super(fileName, fileType, data);
 		this.topic = topic;
 		// TODO Auto-generated constructor stub
