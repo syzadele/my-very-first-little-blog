@@ -1,4 +1,4 @@
-package com.syzadele.blogsyzadele.controller;
+package com.syzadele.blogsyzadele.service;
 
 import java.io.IOException;
 import java.util.Arrays;

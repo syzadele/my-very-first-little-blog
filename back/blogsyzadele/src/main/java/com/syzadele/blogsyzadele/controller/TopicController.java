@@ -15,9 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.syzadele.blogsyzadele.model.Post;
 import com.syzadele.blogsyzadele.model.Topic;
 import com.syzadele.blogsyzadele.model.TopicCoverPhoto;
-import com.syzadele.blogsyzadele.controller.TopicCoverPhotoService;
 import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
+import com.syzadele.blogsyzadele.service.TopicCoverPhotoService;
 
 
 @RestController
@@ -198,7 +198,7 @@ public class TopicController {
 		}
 		return null;
  	}
-		
+	@Transactional
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhoto")
 	public Topic deleteCoverPhoto(@RequestParam(value="photoId") String photoID, @RequestParam(value="id") int id) {
 		if (topicRepository.existsById(id)) {
@@ -209,8 +209,8 @@ public class TopicController {
 		} 
 		return null;
 	}
-	
-	@RequestMapping(method = RequestMethod.POST, value = "DeleteCoverPhotoByNames")
+	@Transactional
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhotoByNames")
 	public Topic deleteCoverPhotosByNames(@RequestParam(value="fileName") String fileName, @RequestParam(value="name") String name) {
 		if (topicRepository.existsByName(name)) {
 			boolean result = tcps.deleteFileByFileName(fileName);
