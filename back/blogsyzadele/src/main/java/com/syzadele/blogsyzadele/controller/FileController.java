@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @RestController
 public class FileController {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 	
 	@Autowired
