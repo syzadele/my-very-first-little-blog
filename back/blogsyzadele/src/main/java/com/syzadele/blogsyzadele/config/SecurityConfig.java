@@ -16,6 +16,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.syzadele.blogsyzadele.security.CustomUserDetailsService;
+import com.syzadele.blogsyzadele.security.JwtAuthenticationEntryPoint;
+import com.syzadele.blogsyzadele.security.JwtAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(
