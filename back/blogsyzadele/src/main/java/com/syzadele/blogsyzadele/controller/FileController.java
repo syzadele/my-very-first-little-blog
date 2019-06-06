@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api/files")
 public class FileController {
 	
 	@SuppressWarnings("unused")
@@ -35,7 +36,7 @@ public class FileController {
         DBFile dbFile = DBFileStorageService.storeFile(file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/downloadFile/")
+                .path("/api/files/downloadFile/")
                 .path(dbFile.getId())
                 .toUriString();
 
