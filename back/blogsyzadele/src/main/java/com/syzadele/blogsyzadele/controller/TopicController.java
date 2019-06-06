@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,7 @@ import com.syzadele.blogsyzadele.service.TopicCoverPhotoService;
 
 
 @RestController
+@Secured("ROLE_ADMIN")
 @RequestMapping("/TopicController")
 public class TopicController {
 	@Autowired

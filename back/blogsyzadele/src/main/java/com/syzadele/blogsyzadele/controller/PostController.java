@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
 
 @RestController
+@Secured("ROLE_ADMIN")
 @RequestMapping("/PostController")
 public class PostController {
 	@Autowired
