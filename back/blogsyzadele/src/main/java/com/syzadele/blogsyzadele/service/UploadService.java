@@ -18,12 +18,12 @@ public class UploadService {
     
     private static Logger logger = LoggerFactory.getLogger(UploadService.class);
     
-    public String uploadImage(MultipartFile file,String uploadPath,String realUploadPath){
+    public String uploadImage(MultipartFile file,String uploadPath, String topicOrPostName,String realUploadPath){
         
         logger.info("上传的相对路径：{}",uploadPath);
         logger.info("上传的绝对路径：{}",realUploadPath);
         
-        String filePath = realUploadPath + file.getOriginalFilename();
+        String filePath = realUploadPath + topicOrPostName + "_" + file.getOriginalFilename();
         
         try {
             File targetFile=new File(filePath);
@@ -33,6 +33,6 @@ public class UploadService {
             logger.info("图片写入失败");
             e.printStackTrace();
         }
-        return uploadPath + "/" + file.getOriginalFilename();
+        return uploadPath + topicOrPostName + "_" + file.getOriginalFilename();
     }
 }

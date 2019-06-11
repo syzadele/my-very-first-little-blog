@@ -1,7 +1,12 @@
 package com.syzadele.blogsyzadele.controller;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -18,7 +23,9 @@ import com.syzadele.blogsyzadele.model.Topic;
 import com.syzadele.blogsyzadele.model.TopicCoverPhoto;
 import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
+import com.syzadele.blogsyzadele.service.ThumbnailService;
 import com.syzadele.blogsyzadele.service.TopicCoverPhotoService;
+import com.syzadele.blogsyzadele.service.UploadService;
 
 
 @RestController
@@ -31,6 +38,10 @@ public class TopicController {
 	private PostRepository postRepository;
 	@Autowired
 	private TopicCoverPhotoService tcps;
+	@Autowired
+	private UploadService uploadService;
+	@Autowired
+	private ThumbnailService thumbnailService;
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
@@ -157,7 +168,7 @@ public class TopicController {
 		return null;
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
+	/*@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
 	public Topic addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
 		if (topicRepository.existsById(id)) {
 			
@@ -166,9 +177,73 @@ public class TopicController {
 			return topicRepository.save(t);
 		}
 		return null;
+	}*/
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
+	public Map<String, String> addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			
+			Topic t = topicRepository.findById(id).get();
+			
+			String topicName = t.getName();
+			String uploadPath = "images/topicImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			String imageUrl = uploadService.uploadImage(file, uploadPath, topicName, realUploadPath);
+	        String thumImageUrl = thumbnailService.thumbnail(file, uploadPath,topicName, realUploadPath);
+			
+	        Map <String, String> imageURLSMap = new HashMap<String, String>();
+	        imageURLSMap.put(file.getOriginalFilename(), imageUrl);
+	        imageURLSMap.put("thum_"+file.getOriginalFilename(), thumImageUrl);
+	        return imageURLSMap;
+		}
+		return null;
 	}
 	
-	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotoByName")
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotos")
+	public List<Map<String,String>>addCoverPhotos(@RequestParam(value="files")  MultipartFile[] files, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+	
+			return	Arrays.asList(files)
+		            .stream()
+		            .map(file -> addCoverPhoto(file, id))
+		            .collect(Collectors.toList());
+
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhoto")
+	public boolean deleteCoverPhoto(@RequestParam(value="photoName") String photoName, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			Topic t = topicRepository.findById(id).get();
+			String topicName = t.getName();
+			String uploadPath = "images/topicImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			String filePath = realUploadPath + topicName + "_" + photoName;
+			String thumFilePath = realUploadPath + "thum_" + topicName + "_" + photoName;
+			System.out.println(filePath);
+			System.out.println(thumFilePath);
+			
+			if (new File(filePath + ".jpg").exists()) {
+				File fileToDelete = new File(filePath + ".jpg");
+				File thumFileToDelete = new File(thumFilePath + ".jpg");
+				boolean result1 = fileToDelete.delete();
+			    boolean result2 = thumFileToDelete.delete();
+			    return result1 & result2;
+			} else {
+				File fileToDelete = new File(filePath + ".PNG");
+				File thumFileToDelete = new File(thumFilePath + ".PNG");
+				boolean result1 = fileToDelete.delete();
+			    boolean result2 = thumFileToDelete.delete();
+			    return result1 & result2;
+			}
+		} 
+		return false;
+	}
+	
+	/*@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotoByName")
 	public Topic addCoverPhotoByName(@RequestParam(value="file") MultipartFile file, @RequestParam(value="name") String name) {
 		if (topicRepository.existsByName(name)) {
 			Topic t = topicRepository.findByName(name);
@@ -221,7 +296,7 @@ public class TopicController {
 			}
 		}
 		return null;
-	}
+	}*/
 	
 	
 

@@ -29,7 +29,7 @@ public class ThumbnailAWTService {
             os = new FileOutputStream(des);
 
             Image image = ImageIO.read(file.getInputStream());
-            int width = image.getWidth(null);// 原图狂宽度
+            int width = image.getWidth(null);// 原图宽度
             int height = image.getHeight(null);// 原图高度
 
             int rateWidth = width / WIDTH;// 宽度缩略比例

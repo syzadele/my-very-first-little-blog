@@ -15,13 +15,13 @@ public class ThumbnailService {
     public static final int WIDTH = 100;
     public static final int HEIGHT = 100;
     
-    public String thumbnail(MultipartFile file, String uploadPath, String realUploadPath){
+    public String thumbnail(MultipartFile file, String uploadPath,String topicOrPostName, String realUploadPath){
         try{
-            String des = realUploadPath + "/thum_" + file.getOriginalFilename();
+            String des = realUploadPath + "thum_" + topicOrPostName + "_" + file.getOriginalFilename();
             Thumbnails.of(file.getInputStream()).size(WIDTH, HEIGHT).toFile(des);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return uploadPath + "/thum_" + file.getOriginalFilename();
+        return uploadPath + "thum_" + topicOrPostName + "_" + file.getOriginalFilename();
     }
 }
