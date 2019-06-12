@@ -1,12 +1,15 @@
 package com.syzadele.blogsyzadele.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
-import javax.transaction.Transactional;
-
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.annotation.Secured;
@@ -14,89 +17,103 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.syzadele.blogsyzadele.model.Post;
 import com.syzadele.blogsyzadele.model.Topic;
 import com.syzadele.blogsyzadele.repository.PostRepository;
 import com.syzadele.blogsyzadele.repository.TopicRepository;
+import com.syzadele.blogsyzadele.service.ThumbnailService;
+import com.syzadele.blogsyzadele.service.UploadService;
 
 @RestController
 @Secured("ROLE_ADMIN")
 @RequestMapping("/PostController")
 public class PostController {
 	@Autowired
-	PostRepository postRepository;
+	private PostRepository postRepository;
 	@Autowired
-	TopicRepository topicRepository;
+	private TopicRepository topicRepository;
+	@Autowired
+	private UploadService uploadService;
+	@Autowired
+	private ThumbnailService thumbnailService;
+	
 	
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
-	public Post create(@RequestParam(value = "title", defaultValue = "untitle post") String title,
-			@RequestParam(value = "topicID", defaultValue = "-1") Integer topicID,
+	public Post create(@RequestParam(value = "title") String title,
+			@RequestParam(value = "topicID", required = false) Integer topicID,
 			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
 			@RequestParam(value = "auther", required = false) String auther,
-			@RequestParam(value = "content", required = false) String content) throws ParseException {
-		
-		if (topicID != null) {
-			if (topicRepository.existsById(topicID)) {
-				Optional<Topic> ot = topicRepository.findById(topicID);
-				Topic t = ot.get();
-				Post p = new Post(title, t, posteDate, auther, content);
-				t.addPost(p);
-				topicRepository.save(t);
-				return p;
+			@RequestParam(value = "content", required = false) String content,
+			@RequestParam(value="coverPhotos", required=false) MultipartFile[] files) throws ParseException {
+		if (!postRepository.existsByTitle(title)) {
+			String uploadPath = "images/postImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			File theDir = new File(realUploadPath + title);
+			System.out.println(theDir);
+
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+			    System.out.println("creating directory: " + theDir.getName());
+			    theDir.mkdir();
 			} else {
-				return null;
+				System.out.println("dir already existe");
+			}
+			if (topicID != null) {
+				if (topicRepository.existsById(topicID)) {
+					Optional<Topic> ot = topicRepository.findById(topicID);
+					Topic t = ot.get();
+					Post p = new Post(title, t, posteDate, auther, content);
+					t.addPost(p);
+					topicRepository.save(t);
+					
+					if (files != null) {
+						Post pp = postRepository.findByTitle(title);
+						int id = pp.getId();
+						addCoverPhotos(files, id);
+					}
+					return p;
+				} else {
+					return null;
+				}
+			} else {
+				Post p = new Post(title, null, posteDate, auther, content);
+				postRepository.save(p);
+				if (files != null) {
+					Post pp = postRepository.findByTitle(title);
+					int id = pp.getId();
+					addCoverPhotos(files, id);
+				}
+				return p;
 			}
 		} else {
-			Post p = new Post(title, null, posteDate, auther, content);
-			postRepository.save(p);
-			return p;
+			return null;
 		}
-		
-	}
-	
-	@RequestMapping(method = RequestMethod.POST, value = "/CreateOneByTopicName")
-	public Post createByTopicName(@RequestParam(value = "title", defaultValue = "untitle post") String title,
-			@RequestParam(value = "name", defaultValue = "-1") String topicName,
-			@RequestParam(value = "posteDate", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss") Date posteDate,
-			@RequestParam(value = "auther", required = false) String auther,
-			@RequestParam(value = "content", required = false) String content) {
-		
-		if (topicName != null) {
-			if (topicRepository.existsByName(topicName)) {
-				Topic t = topicRepository.findByName(topicName);
-				Post p = new Post(title, t, posteDate, auther, content);
-				t.addPost(p);
-				topicRepository.save(t);
-				return p;
-			} else {
-				return null;
-			}
-		} else {
-			Post p = new Post(title, null, posteDate, auther, content);
-			postRepository.save(p);
-			return p;
-		}
-		
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
-	public String deleteOne(@RequestParam(value = "id") int id) {
+	public String deleteOne(@RequestParam(value = "id") int id) throws IOException {
 		
 		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String uploadPath = "images/postImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			File theDir = new File(realUploadPath + p.getTitle() + "/");
+			if (theDir.exists()) {
+				File[] contents = theDir.listFiles();
+				if (contents != null) {
+			        for (File f : contents) {
+			            f.delete();
+			        }
+			    }
+				theDir.delete();
+			} else {
+				System.out.println("folder not found");
+			}
 			postRepository.deleteById(id);
-			return "Delete sucessful";
-		} else {
-			return "Post unexiste!";
-		}
-		
-	}
-	@Transactional
-	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOneByTitle")
-	public String deleteOneByTitle(@RequestParam(value = "title") String title) {
-		
-		if (postRepository.existsByTitle(title)) {
-			postRepository.deleteByTitle(title);
 			return "Delete sucessful";
 		} else {
 			return "Post unexiste!";
@@ -203,5 +220,72 @@ public class PostController {
 		System.out.println("Post not found");
 		return null;
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
+	public Map<String, String> addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
+		if (postRepository.existsById(id)) {
+			
+			Post p = postRepository.findById(id).get();
+			
+			String postTitle = p.getTitle();
+			String uploadPath = "images/postImages/" + postTitle + "/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			String imageUrl = uploadService.uploadImage(file, uploadPath, postTitle, realUploadPath);
+	        String thumImageUrl = thumbnailService.thumbnail(file, uploadPath,postTitle, realUploadPath);
+			
+	        Map <String, String> imageURLSMap = new HashMap<String, String>();
+	        imageURLSMap.put(file.getOriginalFilename(), imageUrl);
+	        imageURLSMap.put("thum_"+file.getOriginalFilename(), thumImageUrl);
+	        return imageURLSMap;
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotos")
+	public List<Map<String,String>>addCoverPhotos(@RequestParam(value="files")  MultipartFile[] files, @RequestParam(value="id") int id) {
+		if (postRepository.existsById(id)) {
+	
+			return	Arrays.asList(files)
+		            .stream()
+		            .map(file -> addCoverPhoto(file, id))
+		            .collect(Collectors.toList());
+
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/DeleteCoverPhoto")
+	public boolean deleteCoverPhoto(@RequestParam(value="photoName") String photoName, @RequestParam(value="id") int id) {
+		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String postTitle = p.getTitle();
+			String uploadPath = "images/postImages/" + postTitle + "/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			String filePath = realUploadPath + postTitle + "_" + photoName;
+			String thumFilePath = realUploadPath + postTitle + "_" + "thum_" + photoName;
+			System.out.println(filePath);
+			System.out.println(thumFilePath);
+			
+			if (new File(filePath + ".jpg").exists()) {
+				File fileToDelete = new File(filePath + ".jpg");
+				File thumFileToDelete = new File(thumFilePath + ".jpg");
+				boolean result1 = fileToDelete.delete();
+			    boolean result2 = thumFileToDelete.delete();
+			    return result1 & result2;
+			} else {
+				File fileToDelete = new File(filePath + ".PNG");
+				File thumFileToDelete = new File(thumFilePath + ".PNG");
+				boolean result1 = fileToDelete.delete();
+			    boolean result2 = thumFileToDelete.delete();
+			    return result1 & result2;
+			}
+		} 
+		return false;
+	}
+	
+	
+	
 
 }

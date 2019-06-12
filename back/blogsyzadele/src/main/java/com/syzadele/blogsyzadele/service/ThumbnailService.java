@@ -17,11 +17,11 @@ public class ThumbnailService {
     
     public String thumbnail(MultipartFile file, String uploadPath,String topicOrPostName, String realUploadPath){
         try{
-            String des = realUploadPath + "thum_" + topicOrPostName + "_" + file.getOriginalFilename();
+            String des = realUploadPath + topicOrPostName + "_" + "thum_"  + file.getOriginalFilename();
             Thumbnails.of(file.getInputStream()).size(WIDTH, HEIGHT).toFile(des);
         }catch (Exception e) {
             e.printStackTrace();
         }
-        return uploadPath + "thum_" + topicOrPostName + "_" + file.getOriginalFilename();
+        return uploadPath + topicOrPostName + "_" + "thum_" + file.getOriginalFilename();
     }
 }

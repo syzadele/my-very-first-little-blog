@@ -27,9 +27,11 @@ public class Topic {
 	private String name;
 	@Lob
 	private String presentation;
+	/*
 	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonIgnoreProperties("topic")
 	private List<TopicCoverPhoto> coverPhotos;
+	*/
 	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	@JsonIgnoreProperties("topic")
 	private List<Post> posts;
@@ -42,18 +44,17 @@ public class Topic {
 		this.name = name;
 		this.presentation = presentation;
 	}
-	
+	/*
 	public Topic(String name, String presentation, List<TopicCoverPhoto> coverPhotos) {
 		this.name = name;
 		this.presentation = presentation;
 		this.coverPhotos = coverPhotos;
-	}
+	}*/
 	
-	public Topic(String name, String presentation, List<TopicCoverPhoto> coverPhotos, List<Post> posts) {
+	public Topic(String name, String presentation, List<Post> posts) {
 		super();
 		this.name = name;
 		this.presentation = presentation;
-		this.coverPhotos = coverPhotos;
 		this.posts = posts;
 	}
 	
@@ -77,6 +78,7 @@ public class Topic {
 	public void setPresentation(String presentation) {
 		this.presentation = presentation;
 	}
+	/*
 	public List<TopicCoverPhoto> getCoverPhotos() {
 		return coverPhotos;
 	}
@@ -100,6 +102,7 @@ public class Topic {
 			this.coverPhotos.remove(photo);
 		}
 	}
+	*/
 	public List<Post> getPosts() {
 		return posts;
 	}

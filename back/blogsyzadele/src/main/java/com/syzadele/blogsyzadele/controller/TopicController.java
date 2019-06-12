@@ -36,8 +36,10 @@ public class TopicController {
 	private TopicRepository topicRepository;
 	@Autowired
 	private PostRepository postRepository;
+	/*
 	@Autowired
 	private TopicCoverPhotoService tcps;
+	*/
 	@Autowired
 	private UploadService uploadService;
 	@Autowired
@@ -46,25 +48,61 @@ public class TopicController {
 	@RequestMapping(method = RequestMethod.POST, value = "/CreateOne")
 	public Topic create(@RequestParam(value="name") String name,
 			@RequestParam(value="presentation") String presentation,
-			@RequestParam(value="files", required=false) MultipartFile[] files){
+			@RequestParam(value="coverPhotos", required=false) MultipartFile[] files){
 		
-		Topic t = new Topic(name, presentation);
 		
-		if (files != null) {
-			topicRepository.save(t);
-			List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
-			t.setCoverPhotos(tcp);
-			return topicRepository.save(t);
+		if (!topicRepository.existsByName(name)) {
+			Topic t = new Topic(name, presentation);
+			String uploadPath = "images/topicImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			File theDir = new File(realUploadPath + name);
+			System.out.println(theDir);
+
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+			    System.out.println("creating directory: " + theDir.getName());
+			    theDir.mkdir();
+			} else {
+				System.out.println("dir already existe");
+			}
+			if (files != null) {
+				topicRepository.save(t);
+				Topic tt = topicRepository.findByName(name);
+				int id = tt.getId();
+				addCoverPhotos(files, id);
+				/*
+				List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
+				t.setCoverPhotos(tcp);
+				*/
+				return t;
+			} else {
+				return topicRepository.save(t);
+			}
 		} else {
-			return topicRepository.save(t);
+			return null;
 		}
-		
 		
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/DeleteOne")
 	public String delete(@RequestParam(value="id") int id) {
 		if (topicRepository.existsById(id)) {
+			Topic t = topicRepository.findById(id).get();
+			String uploadPath = "images/topicImages/";
+			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+			
+			File theDir = new File(realUploadPath + t.getName() + "/");
+			if (theDir.exists()) {
+				File[] contents = theDir.listFiles();
+				if (contents != null) {
+			        for (File f : contents) {
+			            f.delete();
+			        }
+			    }
+				theDir.delete();
+			} else {
+				System.out.println("folder not found.");
+			}
 			topicRepository.deleteById(id);
 			return "delete successful.";
 		}
@@ -168,16 +206,7 @@ public class TopicController {
 		return null;
 	}
 	
-	/*@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
-	public Topic addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
-		if (topicRepository.existsById(id)) {
-			
-			Topic t = topicRepository.findById(id).get();
-			t.addCoverPhotos(tcps.storeFile(file, t));
-			return topicRepository.save(t);
-		}
-		return null;
-	}*/
+	
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
 	public Map<String, String> addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
@@ -186,7 +215,7 @@ public class TopicController {
 			Topic t = topicRepository.findById(id).get();
 			
 			String topicName = t.getName();
-			String uploadPath = "images/topicImages/";
+			String uploadPath = "images/topicImages/" + topicName + "/";
 			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
 			
 			String imageUrl = uploadService.uploadImage(file, uploadPath, topicName, realUploadPath);
@@ -218,7 +247,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String uploadPath = "images/topicImages/";
+			String uploadPath = "images/topicImages/" + topicName + "/";
 			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
 			
 			String filePath = realUploadPath + topicName + "_" + photoName;
@@ -243,7 +272,20 @@ public class TopicController {
 		return false;
 	}
 	
-	/*@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotoByName")
+	
+	
+	/*@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhoto")
+	public Topic addCoverPhoto(@RequestParam(value="file")  MultipartFile file, @RequestParam(value="id") int id) {
+		if (topicRepository.existsById(id)) {
+			
+			Topic t = topicRepository.findById(id).get();
+			t.addCoverPhotos(tcps.storeFile(file, t));
+			return topicRepository.save(t);
+		}
+		return null;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/AddCoverPhotoByName")
 	public Topic addCoverPhotoByName(@RequestParam(value="file") MultipartFile file, @RequestParam(value="name") String name) {
 		if (topicRepository.existsByName(name)) {
 			Topic t = topicRepository.findByName(name);
