@@ -50,45 +50,53 @@ public class PostController {
 			@RequestParam(value="coverPhotos", required=false) MultipartFile[] files) throws ParseException {
 		if (!postRepository.existsByTitle(title)) {
 			String uploadPath = "images/postImages/";
-			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
-			File theDir = new File(realUploadPath + title);
-			System.out.println(theDir);
-
-			// if the directory does not exist, create it
-			if (!theDir.exists()) {
-			    System.out.println("creating directory: " + theDir.getName());
-			    theDir.mkdir();
-			} else {
-				System.out.println("dir already existe");
-			}
-			if (topicID != null) {
-				if (topicRepository.existsById(topicID)) {
-					Optional<Topic> ot = topicRepository.findById(topicID);
-					Topic t = ot.get();
-					Post p = new Post(title, t, posteDate, auther, content);
-					t.addPost(p);
-					topicRepository.save(t);
-					
-					if (files != null) {
-						Post pp = postRepository.findByTitle(title);
-						int id = pp.getId();
-						addCoverPhotos(files, id);
+			try {
+				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+				File theDir = new File(realUploadPath + title);
+				System.out.println(theDir);
+	
+				// if the directory does not exist, create it
+				if (!theDir.exists()) {
+				    System.out.println("creating directory: " + theDir.getName());
+				    theDir.mkdir();
+				    if (topicID != null) {
+						if (topicRepository.existsById(topicID)) {
+							Optional<Topic> ot = topicRepository.findById(topicID);
+							Topic t = ot.get();
+							Post p = new Post(title, t, posteDate, auther, content);
+							t.addPost(p);
+							topicRepository.save(t);
+							
+							if (files != null) {
+								Post pp = postRepository.findByTitle(title);
+								int id = pp.getId();
+								addCoverPhotos(files, id);
+							}
+							return p;
+						} else {
+							System.out.println("topic not found.");
+							return null;
+						}
+					} else {
+						Post p = new Post(title, null, posteDate, auther, content);
+						postRepository.save(p);
+						if (files != null) {
+							Post pp = postRepository.findByTitle(title);
+							int id = pp.getId();
+							addCoverPhotos(files, id);
+						}
+						return p;
 					}
-					return p;
 				} else {
+					System.out.println("dir already existe");
 					return null;
 				}
-			} else {
-				Post p = new Post(title, null, posteDate, auther, content);
-				postRepository.save(p);
-				if (files != null) {
-					Post pp = postRepository.findByTitle(title);
-					int id = pp.getId();
-					addCoverPhotos(files, id);
-				}
-				return p;
+			} catch (Exception e) {
+				System.out.println("postImages folder not found, can't create photo folder for this post.");
+				return null;
 			}
 		} else {
+			System.out.println("post not found.");
 			return null;
 		}
 	}

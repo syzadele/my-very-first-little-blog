@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,24 +61,27 @@ public class TopicController {
 				if (!theDir.exists()) {
 				    System.out.println("creating directory: " + theDir.getName());
 				    theDir.mkdir();
+				    if (files != null) {
+						topicRepository.save(t);
+						Topic tt = topicRepository.findByName(name);
+						int id = tt.getId();
+						addCoverPhotos(files, id);
+						/*
+						List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
+						t.setCoverPhotos(tcp);
+						*/
+						return t;
+					} else {
+						return topicRepository.save(t);
+					}
 				} else {
 					System.out.println("dir already existe");
+					return null;
 				}
-				if (files != null) {
-					topicRepository.save(t);
-					Topic tt = topicRepository.findByName(name);
-					int id = tt.getId();
-					addCoverPhotos(files, id);
-					/*
-					List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
-					t.setCoverPhotos(tcp);
-					*/
-					return t;
-				} else {
-					return topicRepository.save(t);
-				}
+			
+				
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found");
+				System.out.println("topicImages folder not found, can't create photo folder for this topic.");
 				return null;
 			}
 		} else {
