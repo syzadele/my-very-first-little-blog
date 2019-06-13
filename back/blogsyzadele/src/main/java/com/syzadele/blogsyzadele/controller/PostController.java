@@ -1,6 +1,7 @@
 package com.syzadele.blogsyzadele.controller;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -49,54 +50,50 @@ public class PostController {
 			@RequestParam(value = "content", required = false) String content,
 			@RequestParam(value="coverPhotos", required=false) MultipartFile[] files) throws ParseException {
 		if (!postRepository.existsByTitle(title)) {
-			String uploadPath = "images/postImages/";
+			String uploadPath = "static/images/postImages/";
 			try {
 				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
 				File theDir = new File(realUploadPath + title);
 				System.out.println(theDir);
 	
-				// if the directory does not exist, create it
-				if (!theDir.exists()) {
-				    System.out.println("creating directory: " + theDir.getName());
-				    theDir.mkdir();
-				    if (topicID != null) {
-						if (topicRepository.existsById(topicID)) {
-							Optional<Topic> ot = topicRepository.findById(topicID);
-							Topic t = ot.get();
-							Post p = new Post(title, t, posteDate, auther, content);
-							t.addPost(p);
-							topicRepository.save(t);
-							
-							if (files != null) {
-								Post pp = postRepository.findByTitle(title);
-								int id = pp.getId();
-								addCoverPhotos(files, id);
-							}
-							return p;
-						} else {
-							System.out.println("topic not found.");
-							return null;
-						}
-					} else {
-						Post p = new Post(title, null, posteDate, auther, content);
-						postRepository.save(p);
+				
+			    System.out.println("creating directory: " + theDir.getName());
+			    theDir.mkdir();
+			    if (topicID != null) {
+					if (topicRepository.existsById(topicID)) {
+						Optional<Topic> ot = topicRepository.findById(topicID);
+						Topic t = ot.get();
+						Post p = new Post(title, t, posteDate, auther, content);
+						t.addPost(p);
+						topicRepository.save(t);
+						
 						if (files != null) {
 							Post pp = postRepository.findByTitle(title);
 							int id = pp.getId();
 							addCoverPhotos(files, id);
 						}
 						return p;
+					} else {
+						System.out.println("topic not found.");
+						return null;
 					}
 				} else {
-					System.out.println("dir already existe");
-					return null;
+					Post p = new Post(title, null, posteDate, auther, content);
+					postRepository.save(p);
+					if (files != null) {
+						Post pp = postRepository.findByTitle(title);
+						int id = pp.getId();
+						addCoverPhotos(files, id);
+					}
+					return p;
 				}
+				
 			} catch (Exception e) {
 				System.out.println("postImages folder not found, can't create photo folder for this post.");
 				return null;
 			}
 		} else {
-			System.out.println("post not found.");
+			System.out.println("Post with this title already exist.");
 			return null;
 		}
 	}
@@ -106,23 +103,26 @@ public class PostController {
 		
 		if (postRepository.existsById(id)) {
 			Post p = postRepository.findById(id).get();
-			String uploadPath = "images/postImages/";
-			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
-			
-			File theDir = new File(realUploadPath + p.getTitle() + "/");
-			if (theDir.exists()) {
-				File[] contents = theDir.listFiles();
-				if (contents != null) {
-			        for (File f : contents) {
-			            f.delete();
-			        }
-			    }
-				theDir.delete();
-			} else {
-				System.out.println("folder not found");
+			String uploadPath = "static/images/postImages/";
+			try {
+				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+				File theDir = new File(realUploadPath + p.getTitle() + "/");
+				if (theDir.exists()) {
+					File[] contents = theDir.listFiles();
+					if (contents != null) {
+				        for (File f : contents) {
+				            f.delete();
+				        }
+				    }
+					theDir.delete();
+				} else {
+					System.out.println("folder not found");
+				}
+				postRepository.deleteById(id);
+				return "Delete sucessful";
+			} catch (Exception e) {
+				return "Path incorrect, could not delete this post completly.";
 			}
-			postRepository.deleteById(id);
-			return "Delete sucessful";
 		} else {
 			return "Post unexiste!";
 		}
@@ -236,17 +236,23 @@ public class PostController {
 			Post p = postRepository.findById(id).get();
 			
 			String postTitle = p.getTitle();
-			String uploadPath = "images/postImages/" + postTitle + "/";
-			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
-			
-			String imageUrl = uploadService.uploadImage(file, uploadPath, postTitle, realUploadPath);
-	        String thumImageUrl = thumbnailService.thumbnail(file, uploadPath,postTitle, realUploadPath);
-			
-	        Map <String, String> imageURLSMap = new HashMap<String, String>();
-	        imageURLSMap.put(file.getOriginalFilename(), imageUrl);
-	        imageURLSMap.put("thum_"+file.getOriginalFilename(), thumImageUrl);
-	        return imageURLSMap;
+			String uploadPath = "static/images/postImages/" + postTitle + "/";
+			try {
+				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+				
+				String imageUrl = uploadService.uploadImage(file, uploadPath, postTitle, realUploadPath);
+		        String thumImageUrl = thumbnailService.thumbnail(file, uploadPath,postTitle, realUploadPath);
+				
+		        Map <String, String> imageURLSMap = new HashMap<String, String>();
+		        imageURLSMap.put(file.getOriginalFilename(), imageUrl);
+		        imageURLSMap.put("thum_"+file.getOriginalFilename(), thumImageUrl);
+		        return imageURLSMap;
+			} catch (Exception e) {
+				System.out.println("Path incorrect, can't add cover photos.");
+				return null;
+			}
 		}
+		System.out.println("Post not found.");
 		return null;
 	}
 	
@@ -268,32 +274,192 @@ public class PostController {
 		if (postRepository.existsById(id)) {
 			Post p = postRepository.findById(id).get();
 			String postTitle = p.getTitle();
-			String uploadPath = "images/postImages/" + postTitle + "/";
-			String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
-			
-			String filePath = realUploadPath + postTitle + "_" + photoName;
-			String thumFilePath = realUploadPath + postTitle + "_" + "thum_" + photoName;
-			System.out.println(filePath);
-			System.out.println(thumFilePath);
-			
-			if (new File(filePath + ".jpg").exists()) {
-				File fileToDelete = new File(filePath + ".jpg");
-				File thumFileToDelete = new File(thumFilePath + ".jpg");
-				boolean result1 = fileToDelete.delete();
-			    boolean result2 = thumFileToDelete.delete();
-			    return result1 & result2;
-			} else {
-				File fileToDelete = new File(filePath + ".PNG");
-				File thumFileToDelete = new File(thumFilePath + ".PNG");
-				boolean result1 = fileToDelete.delete();
-			    boolean result2 = thumFileToDelete.delete();
-			    return result1 & result2;
+			String uploadPath = "static/images/postImages/" + postTitle + "/";
+			try {
+				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
+				
+				String filePath = realUploadPath + postTitle + "_" + photoName;
+				String thumFilePath = realUploadPath + postTitle + "_" + "thum_" + photoName;
+				System.out.println(filePath);
+				System.out.println(thumFilePath);
+				
+				File dir = new File(realUploadPath);
+				File [] files = dir.listFiles(new FilenameFilter() {
+				    @Override
+				    public boolean accept(File dir, String name) {
+				        return name.contains("_" + photoName + ".");
+				    }
+				});
+				
+				for (File f : files) {
+					f.delete();
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect, can't delete cover photos.");
+				return false;
 			}
 		} 
+		System.out.println("Post not found.");
 		return false;
 	}
 	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetCoverPhoto")
+	public File[] getCoverPhoto(@RequestParam(value = "id") int id, @RequestParam(value = "photoName") String photoName) {
+		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String postTitle = p.getTitle();
+			String downloadPath = "static/images/postImages/";
+			
+			try {
+				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
+				File dir = new File(realdownloadPath + postTitle + "/");
+				if (dir.exists()) {
+					File [] files = dir.listFiles(new FilenameFilter() {
+					    @Override
+					    public boolean accept(File dir, String name) {
+					        return name.startsWith(postTitle + "_" + photoName + ".");
+					    }
+					});
+					return files;
+				} else {
+					System.out.println("Post photo folder not found.");
+					return null;
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect.");
+				return null;
+			}
+		} else {
+			System.out.println("Post not found.");
+			return null;
+		}
+	}
 	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetThumCoverPhoto")
+	public File[] getThumCoverPhoto(@RequestParam(value = "id") int id, @RequestParam(value = "photoName") String photoName) {
+		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String postTitle = p.getTitle();
+			String downloadPath = "static/images/postImages/";
+			
+			try {
+				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
+				File dir = new File(realdownloadPath + postTitle + "/");
+				if (dir.exists()) {
+					File [] files = dir.listFiles(new FilenameFilter() {
+					    @Override
+					    public boolean accept(File dir, String name) {
+					        return name.startsWith(postTitle + "_" + "thum_" + photoName + ".");
+					    }
+					});
+					return files;
+				} else {
+					System.out.println("Post photo folder not found.");
+					return null;
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect.");
+				return null;
+			}
+		} else {
+			System.out.println("Post not found.");
+			return null;
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetAllNorCoverPhotos")
+	public File[] getAllNorCoverPhotos(@RequestParam(value = "id") int id) {
+		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String postTitle = p.getTitle();
+			String downloadPath = "static/images/postImages/";
+			
+			try {
+				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
+				File dir = new File(realdownloadPath + postTitle + "/");
+				if (dir.exists()) {
+					File [] files = dir.listFiles(new FilenameFilter() {
+					    @Override
+					    public boolean accept(File dir, String name) {
+					        return !name.contains("_thum_");
+					    }
+					});
+					return files;
+				} else {
+					System.out.println("Post photo folder not found.");
+					return null;
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect.");
+				return null;
+			}
+		} else {
+			System.out.println("Post not found.");
+			return null;
+		}
+		
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetAllThumCoverPhotos")
+	public File[] getAllThumCoverPhotos(@RequestParam(value = "id") int id) {
+		if (postRepository.existsById(id)) {
+			Post t = postRepository.findById(id).get();
+			String postTitle = t.getTitle();
+			String downloadPath = "static/images/postImages/";
+			
+			try {
+				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
+				File dir = new File(realdownloadPath + postTitle + "/");
+				if (dir.exists()) {
+					File [] files = dir.listFiles(new FilenameFilter() {
+					    @Override
+					    public boolean accept(File dir, String name) {
+					        return name.contains("_thum_");
+					    }
+					});
+					return files;
+				} else {
+					System.out.println("Post photo folder not found.");
+					return null;
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect.");
+				return null;
+			}
+			
+		} else {
+			System.out.println("Post not found.");
+			return null;
+		}
+		
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/GetAllCoverPhotos")
+	public File[] getAllCoverPhotos(@RequestParam(value = "id") int id) {
+		if (postRepository.existsById(id)) {
+			Post p = postRepository.findById(id).get();
+			String postTitle = p.getTitle();
+			String downloadPath = "static/images/postImages/";
+			try {
+				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
+				
+				File dir = new File(realdownloadPath + postTitle + "/");
+				if (dir.exists()) {
+					return dir.listFiles();	
+				} else {
+					System.out.println("Post photo folder not found.");
+					return null;
+				}
+			} catch (Exception e) {
+				System.out.println("Path incorrect.");
+				return null;
+			}
+
+		} else {
+			System.out.println("Post not found.");
+			return null;
+		}
+	}
 	
 
 }

@@ -50,7 +50,7 @@ public class TopicController {
 		
 		if (!topicRepository.existsByName(name)) {
 			Topic t = new Topic(name, presentation);
-			String uploadPath = "images/topicImages/";
+			String uploadPath = "static/images/topicImages/";
 			
 			try {
 				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
@@ -58,33 +58,29 @@ public class TopicController {
 				System.out.println(theDir);
 	
 				// if the directory does not exist, create it
-				if (!theDir.exists()) {
-				    System.out.println("creating directory: " + theDir.getName());
-				    theDir.mkdir();
-				    if (files != null) {
-						topicRepository.save(t);
-						Topic tt = topicRepository.findByName(name);
-						int id = tt.getId();
-						addCoverPhotos(files, id);
-						/*
-						List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
-						t.setCoverPhotos(tcp);
-						*/
-						return t;
-					} else {
-						return topicRepository.save(t);
-					}
-				} else {
-					System.out.println("dir already existe");
-					return null;
-				}
-			
 				
+			    System.out.println("creating directory: " + theDir.getName());
+			    theDir.mkdir();
+			    if (files != null) {
+					topicRepository.save(t);
+					Topic tt = topicRepository.findByName(name);
+					int id = tt.getId();
+					addCoverPhotos(files, id);
+					/*
+					List<TopicCoverPhoto> tcp = tcps.storeMultipleFile(files, t);
+					t.setCoverPhotos(tcp);
+					*/
+					return t;
+				} else {
+					return topicRepository.save(t);
+				}
+		
 			} catch (Exception e) {
 				System.out.println("topicImages folder not found, can't create photo folder for this topic.");
 				return null;
 			}
 		} else {
+			System.out.println("Topic with this name already existe.");
 			return null;
 		}
 		
@@ -94,7 +90,7 @@ public class TopicController {
 	public String delete(@RequestParam(value="id") int id) {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
-			String uploadPath = "images/topicImages/";
+			String uploadPath = "static/images/topicImages/";
 			try {
 				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
 				
@@ -218,7 +214,7 @@ public class TopicController {
 			Topic t = topicRepository.findById(id).get();
 			
 			String topicName = t.getName();
-			String uploadPath = "images/topicImages/" + topicName + "/";
+			String uploadPath = "static/images/topicImages/" + topicName + "/";
 			try {
 				String realUploadPath = getClass().getClassLoader().getResource(uploadPath).getPath();
 				String imageUrl = uploadService.uploadImage(file, uploadPath, topicName, realUploadPath);
@@ -254,7 +250,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			
 			try {
 				String realDownLoadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
@@ -286,7 +282,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			
 			try {
 				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
@@ -304,7 +300,7 @@ public class TopicController {
 					return null;
 				}
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found.");
+				System.out.println("Path incorrect.");
 				return null;
 			}
 		} else {
@@ -318,7 +314,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			
 			try {
 				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
@@ -336,7 +332,7 @@ public class TopicController {
 					return null;
 				}
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found.");
+				System.out.println("Path incorrect.");
 				return null;
 			}
 		} else {
@@ -350,7 +346,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			
 			try {
 				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
@@ -368,7 +364,7 @@ public class TopicController {
 					return null;
 				}
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found.");
+				System.out.println("Path incorrect.");
 				return null;
 			}
 		} else {
@@ -383,7 +379,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			
 			try {
 				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
@@ -401,7 +397,7 @@ public class TopicController {
 					return null;
 				}
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found.");
+				System.out.println("Path incorrect.");
 				return null;
 			}
 			
@@ -417,7 +413,7 @@ public class TopicController {
 		if (topicRepository.existsById(id)) {
 			Topic t = topicRepository.findById(id).get();
 			String topicName = t.getName();
-			String downloadPath = "images/topicImages/";
+			String downloadPath = "static/images/topicImages/";
 			try {
 				String realdownloadPath = getClass().getClassLoader().getResource(downloadPath).getPath();
 				
@@ -429,7 +425,7 @@ public class TopicController {
 					return null;
 				}
 			} catch (Exception e) {
-				System.out.println("topicImages folder not found");
+				System.out.println("Path incorrect.");
 				return null;
 			}
 
