@@ -1,43 +1,61 @@
 package com.syzadele.blogsyzadele.model;
-import java.util.ArrayList;
+
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+//import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@Table(name="TOPIC")
+@JsonIgnoreProperties("coverPhotos")
 public class Topic {
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@Column(unique=true, length = 100)
 	private String name;
 	@Lob
 	private String presentation;
-
-	private ArrayList<String> coverPhotos;
-	private ArrayList<Post> posts;
+	/*
+	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+	@JsonIgnoreProperties("topic")
+	private List<TopicCoverPhoto> coverPhotos;
+	*/
+	@OneToMany(mappedBy="topic", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+	@JsonIgnoreProperties("topic")
+	private List<Post> posts;
 	
-	public Topic(int id, String name, String presentation, ArrayList<String> coverPhotos) {
-		this.id = id;
+	
+	public Topic() {
+		
+	}
+	public Topic(String name, String presentation) {
+		this.name = name;
+		this.presentation = presentation;
+	}
+	/*
+	public Topic(String name, String presentation, List<TopicCoverPhoto> coverPhotos) {
 		this.name = name;
 		this.presentation = presentation;
 		this.coverPhotos = coverPhotos;
-	}
+	}*/
 	
-	public void addCoverPhoto(String photo) {
-		this.coverPhotos.add(photo);
-	}
-	
-	public void deletePhoto(String photo) {
-		this.coverPhotos.remove(this.coverPhotos.indexOf(photo));
-	}
-	
-	public void addPost(Post post) {
-		this.posts.add(post);
-	}
-	
-	public void deletePost(int id) {
-		this.posts.remove(this.posts.indexOf(this.getPost(id)));
+	public Topic(String name, String presentation, List<Post> posts) {
+		super();
+		this.name = name;
+		this.presentation = presentation;
+		this.posts = posts;
 	}
 	
 	public int getId() {
@@ -60,13 +78,32 @@ public class Topic {
 	public void setPresentation(String presentation) {
 		this.presentation = presentation;
 	}
-	public ArrayList<String> getCoverPhotos() {
+	/*
+	public List<TopicCoverPhoto> getCoverPhotos() {
 		return coverPhotos;
 	}
-	public void setCoverPhotos(ArrayList<String> coverPhotos) {
+	
+	public void setCoverPhotos(List<TopicCoverPhoto> coverPhotos) {
 		this.coverPhotos = coverPhotos;
 	}
-	public ArrayList<Post> getPosts() {
+	
+	public void addCoverPhotos(TopicCoverPhoto photo) {
+		if (!this.coverPhotos.contains(photo)) {
+			this.coverPhotos.add(photo);
+		}
+	}
+	
+	public void addMCoverPhotos(List<TopicCoverPhoto> photos) {
+		this.coverPhotos.addAll(photos);
+	}
+	
+	public void deleteCoverPhotos(TopicCoverPhoto photo) {
+		if (this.coverPhotos.contains(photo)) {
+			this.coverPhotos.remove(photo);
+		}
+	}
+	*/
+	public List<Post> getPosts() {
 		return posts;
 	}
 	public Post getPost(int id) {
@@ -75,8 +112,12 @@ public class Topic {
 		}
 		return null;
 	}
-	public void setPosts(ArrayList<Post> posts) {
+	public void setPosts(List<Post> posts) {
 		this.posts = posts;
 	}
 		
+	public void addPost(Post post) {
+		this.posts.add(post);
+	}
+	
 }

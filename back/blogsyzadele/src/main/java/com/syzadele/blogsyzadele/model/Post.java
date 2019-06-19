@@ -1,18 +1,27 @@
 package com.syzadele.blogsyzadele.model;
 import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
+@Table(name="POST")
 public class Post {
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	private String topic;
+	@Column(unique=true, length=100)
 	private String title;
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date posteDate;
@@ -20,15 +29,26 @@ public class Post {
 	@Lob
 	private String content;
 	private int readTimes;
+	@ManyToOne
+	@JoinColumn(name="topic_id")
+	@JsonIgnoreProperties("posts")
+	private Topic topic;
 	
-	public Post(String title, Date posteDate, String auther) {
+	public Post() {
+
+	}
+	
+	public Post(String title, Topic topic, Date posteDate, String auther, String content) {
 		super();
 		this.title = title;
+		this.topic = topic;
 		this.posteDate = posteDate;
 		this.auther = auther;
+		this.content = content;
+		this.readTimes = 0;
 	}
 
-	public Post(int id, String topic, String title, Date posteDate, String auther, String content, int readTimes) {
+	public Post(int id, Topic topic, String title, Date posteDate, String auther, String content) {
 		super();
 		this.id = id;
 		this.topic = topic;
@@ -36,7 +56,7 @@ public class Post {
 		this.posteDate = posteDate;
 		this.auther = auther;
 		this.content = content;
-		this.readTimes = readTimes;
+		this.readTimes = 0;
 	}
 
 	public int getId() {
@@ -47,11 +67,11 @@ public class Post {
 		this.id = id;
 	}
 	
-	public String getTopic() {
+	public Topic getTopic() {
 		return topic;
 	}
 
-	public void setTopic(String topic) {
+	public void setTopic(Topic topic) {
 		this.topic = topic;
 	}
 
@@ -94,5 +114,6 @@ public class Post {
 	public void setReadTimes(int readTimes) {
 		this.readTimes = readTimes;
 	}
+	
 
 }
